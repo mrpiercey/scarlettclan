@@ -611,7 +611,7 @@ function drawBar(){
     if (b.id === 'walk') drawCursor(ctx, cx, cy, 'walk');
     else if (b.id === 'look') drawCursor(ctx, cx, cy + 2, 'look');
     else if (b.id === 'talk') drawCursor(ctx, cx, cy, 'talk');
-    else if (b.id === 'use') drawCursor(ctx, cx, cy, 'use');
+    else if (b.id === 'use') drawCursor(ctx, cx + 2, cy - 3, 'use');
     else if (b.id === 'item'){
       if (G.activeItem) drawItem(ctx, b.x + 4, 3, G.activeItem);
       else { ctx.fillStyle = '#7a6a54'; ctx.fillText('?', b.x + 10, 6); }

@@ -341,12 +341,32 @@ function drawCursor(g, x, y, mode, itemId){
       g.strokeStyle = CUR_OUT; g.lineWidth = 1.4;
       g.beginPath(); g.moveTo(x, y + 4); g.quadraticCurveTo(x + 7, y - 2, x + 14, y + 4); g.stroke();
       break;
-    case 'use': // pointing hand, finger raised
-      poly(g, [[x + 5, y], [x + 8.5, y], [x + 8.5, y + 5.5], [x + 12, y + 6.5], [x + 14, y + 9], [x + 13.5, y + 14], [x + 3, y + 14], [x + 1.5, y + 9], [x + 5, y + 6.5]], CUR_OUT);
-      poly(g, [[x + 5.9, y + 1], [x + 7.6, y + 1], [x + 7.6, y + 6.6], [x + 11.4, y + 7.6], [x + 12.9, y + 9.6], [x + 12.5, y + 13], [x + 4, y + 13], [x + 2.7, y + 9.4], [x + 5.9, y + 7.4]], CUR_SK);
-      frect(g, x + 6, y + 1, 1, 5, CUR_HI);               // finger highlight
-      frect(g, x + 9, y + 9, 1, 3.5, CUR_SK2);            // knuckle creases
-      frect(g, x + 11, y + 9.5, 1, 3, CUR_SK2);
+    case 'use': // pointing hand: index finger up, three curled knuckles, thumb, cuff
+      var HAND = [
+        '....OO..........',
+        '...OSSO.........',
+        '...OHSO.........',
+        '...OHSO.........',
+        '...OSSO.........',
+        '...OSSOO........',
+        '...OSSOSSOO.....',
+        '...OSSOSSOSSOO..',
+        '..OOSSDSSDSSSSO.',
+        '.OSSOSSSSSSSSDO.',
+        '.OSSSSSSSSSSSDO.',
+        '.OSSSSSSSSSSDO..',
+        '..OSSSSSSSSSDO..',
+        '..OSSSSSSSSDO...',
+        '...OSSSSSSSDO...',
+        '...OOOOOOOOO....'
+      ];
+      var HC = { O: CUR_OUT, S: CUR_SK, H: CUR_HI, D: CUR_SK2 };
+      for (var hy = 0; hy < HAND.length; hy++){
+        for (var hx = 0; hx < HAND[hy].length; hx++){
+          var hch = HAND[hy][hx];
+          if (hch !== '.') px(g, x + hx - 4, y + hy, HC[hch]);   // fingertip lands at the click point
+        }
+      }
       break;
     case 'talk': // round speech bubble with curled tail
       ell(g, x + 7, y + 5.5, 7.5, 5.5, CUR_OUT);
