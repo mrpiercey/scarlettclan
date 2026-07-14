@@ -532,15 +532,15 @@ function beginWakeUp(){
     N('...beep. Beep. The hiss of brakes. Warm afternoon sun through a smudged window.'),
     N('"End of the line, hon!" calls the bus driver. Scarlett blinks awake in her old seat on Bus 15 — same swim bag, same golden July 14th afternoon... her fifteenth birthday, with the party still waiting.'),
     ME('I\'m back! The SAME ride home... but I remember all of it. Every camp. Every collar. Every whisker.'),
-    { who:null, text:'She grabs her backpack and hops down the bus steps — and there, on the lawn in front of the dark blue house, her whole family is waiting.',
-      effect: function(){ G.endPhase = 1; SND.playSong('birthday'); startFade('#000', 35); } },
+    { who:null, text:'She grabs her swim bag and hops down the bus steps — and there, on the lawn in front of the dark blue house, her whole family is waiting.',
+      effect: function(){ G.endPhase = 1; SND.playSong('birthday'); startFade('#000', 35); DLG.anchor = 'top'; } },
     { who:'dad', text:'There she is! Happy 15th birthday, kiddo! Hey — what do you call a pile of kittens? A MEOWNTAIN. I\'ve been saving that one all day. Your mother is very tired.' },
     { who:'mom', text:'Happy birthday, sweetheart! Grilled cheese and tomato soup tonight, cake after — and yes, we spent WAY too much at Wilson\'s Grocery on party snacks. Again.' },
     { who:'hank', text:'Happy birthday, Scarlett! I called dibs on the corner piece — Drake Maye rules, number 10 always gets the corner piece. Also I got you Takis. Okay, I got ME Takis. But I\'ll share.' },
     { who:'ramona', text:'HAPPY BIRTHDAY SCARLETT!! I drew you FIFTEEN cats on your card! And one of them is GOLD!' },
     ME('...Fifteen cats. And one of them is gold. *smiles* Best. Birthday. Ever.'),
     N('And somewhere behind her — or maybe somewhere much, much farther away — a golden warrior purrs.')
-  ], function(){ G.endPhase = 2; });
+  ], function(){ G.endPhase = 2; DLG.anchor = 'bottom'; });
 }
 
 // ============================================================
@@ -935,7 +935,11 @@ function drawTitle(){
 
 function drawEnding(){
   if (G.endPhase === 0){
-    ctx.drawImage(ART.get('bus'), 0, 0);
+    // Bus 15 stopped at her corner on Richmond Road — same shot as the ride out
+    ctx.drawImage(ART.get('busride'), 0, 0);
+    ctx.fillStyle = '#e8e0c8';
+    for (var bdx = -22; bdx < 340; bdx += 44) ctx.fillRect(bdx, 160, 22, 3);   // lane dashes, parked still
+    drawBusSprite(ctx, 56, 128, tick, true);
   } else {
     ctx.drawImage(ART.get('home'), 0, 0);
     drawScarlett(ctx, 246, 184, 'left', 0, 1.05);

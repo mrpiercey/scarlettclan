@@ -249,10 +249,13 @@ ART.painters.busride = function(g){
 };
 
 // the big yellow bus itself, drawn live so it can bob and roll (x = left edge, y = road contact)
-function drawBusSprite(g, x, y, t){
-  // exhaust puffing from the tailpipe (bus points left, so pipe is at the right)
-  var puff = (t / 8 | 0) % 3;
-  ell(g, x + 208 + puff * 6, y - 8 - puff * 2, 4 + puff * 2, 3 + puff, 'rgba(150,150,150,' + (0.4 - puff * 0.12) + ')');
+// stopped=true: parked at the corner — no exhaust/streaks, still wheels, Scarlett awake
+function drawBusSprite(g, x, y, t, stopped){
+  if (!stopped){
+    // exhaust puffing from the tailpipe (bus points left, so pipe is at the right)
+    var puff = (t / 8 | 0) % 3;
+    ell(g, x + 208 + puff * 6, y - 8 - puff * 2, 4 + puff * 2, 3 + puff, 'rgba(150,150,150,' + (0.4 - puff * 0.12) + ')');
+  }
   // body
   frect(g, x + 4, y - 48, 198, 38, '#f2be32');
   frect(g, x + 4, y - 48, 198, 4, '#f8d874');                 // roof highlight
@@ -278,11 +281,20 @@ function drawBusSprite(g, x, y, t){
     frect(g, wx, y - 44, 21, 15, '#4a6a8e');
     frect(g, wx, y - 44, 21, 2, '#7a92ac');                   // glass shine
     if (wI === 3){
-      // Scarlett, dozing against the glass: long brown hair, tipped head
-      frect(g, wx + 3, y - 40, 12, 10, '#6a4226');
-      frect(g, wx + 5, y - 37, 8, 7, '#e8b48e');
-      frect(g, wx + 6, y - 34, 2, 1, '#5a3a20'); frect(g, wx + 10, y - 34, 2, 1, '#5a3a20');  // closed eyes
-      frect(g, wx + 13, y - 39, 3, 9, '#8a5c36');             // hair against the window
+      if (stopped){
+        // Scarlett, wide awake and sitting up straight
+        frect(g, wx + 5, y - 42, 11, 5, '#6a4226');
+        frect(g, wx + 6, y - 39, 9, 8, '#e8b48e');
+        frect(g, wx + 4, y - 40, 3, 10, '#6a4226'); frect(g, wx + 14, y - 40, 3, 10, '#6a4226');  // long hair
+        px(g, wx + 8, y - 36, '#3a6ade'); px(g, wx + 12, y - 36, '#3a6ade');    // eyes OPEN
+        frect(g, wx + 9, y - 33, 3, 1, '#c4685a');            // smile — she remembers everything
+      } else {
+        // Scarlett, dozing against the glass: long brown hair, tipped head
+        frect(g, wx + 3, y - 40, 12, 10, '#6a4226');
+        frect(g, wx + 5, y - 37, 8, 7, '#e8b48e');
+        frect(g, wx + 6, y - 34, 2, 1, '#5a3a20'); frect(g, wx + 10, y - 34, 2, 1, '#5a3a20');  // closed eyes
+        frect(g, wx + 13, y - 39, 3, 9, '#8a5c36');           // hair against the window
+      }
     } else {
       // another kid on the ride home
       frect(g, wx + 6, y - 39, 8, 8, ['#e8b48e', '#c88a62', '#e8c098', '#a86a42', '#e8b48e', '#d09a72'][wI]);
@@ -294,15 +306,17 @@ function drawBusSprite(g, x, y, t){
   g.fillStyle = '#2a2620'; g.font = 'bold 6px monospace'; g.textBaseline = 'top';
   g.fillText('LEXINGTON SWIM TEAM', x + 26, y - 26);
   g.fillText('BUS FIFTEEN', x + 138, y - 26);                 // spelled out, no ambiguous digits
-  // roof flashers
-  px(g, x + 6, y - 50, '#e43a2a'); px(g, x + 198, y - 50, '#e43a2a');
-  // wheels, spinning
+  // roof flashers — they blink while the bus is stopped to let riders off
+  var flash = stopped && ((t / 12 | 0) % 2 === 0);
+  px(g, x + 6, y - 50, flash ? '#ff6a4a' : '#e43a2a'); px(g, x + 198, y - 50, flash ? '#ff6a4a' : '#e43a2a');
+  if (flash){ px(g, x + 6, y - 51, '#ffd0b0'); px(g, x + 198, y - 51, '#ffd0b0'); }
+  // wheels (spinning while rolling, still while stopped)
   var wheels = [x + 42, x + 168];
   for (var wh = 0; wh < 2; wh++){
     var cx = wheels[wh];
     ell(g, cx, y - 2, 10, 10, '#1a1a1e');
     ell(g, cx, y - 2, 4.5, 4.5, '#8a8a92');
-    var a = t * 0.35 + wh;
+    var a = (stopped ? 0.6 : t * 0.35) + wh;
     g.strokeStyle = '#4a4a52'; g.lineWidth = 1.5;
     g.beginPath();
     g.moveTo(cx - Math.cos(a) * 4, y - 2 - Math.sin(a) * 4);
@@ -311,10 +325,12 @@ function drawBusSprite(g, x, y, t){
     g.lineTo(cx + Math.cos(a + 1.57) * 4, y - 2 + Math.sin(a + 1.57) * 4);
     g.stroke();
   }
-  // speed streaks trailing behind
-  g.fillStyle = 'rgba(255,255,255,0.5)';
-  for (var st = 0; st < 4; st++){
-    g.fillRect(x + 205 + ((t * 3 + st * 17) % 30), y - 40 + st * 9, 10 + st * 2, 1);
+  if (!stopped){
+    // speed streaks trailing behind
+    g.fillStyle = 'rgba(255,255,255,0.5)';
+    for (var st = 0; st < 4; st++){
+      g.fillRect(x + 205 + ((t * 3 + st * 17) % 30), y - 40 + st * 9, 10 + st * 2, 1);
+    }
   }
 }
 
@@ -932,8 +948,7 @@ ART.painters.home = function(g){
   frect(g, 282, 152, 38, 4, '#c89422');
   frect(g, 284, 158, 14, 10, '#3a4a5e');                     // rear window
   frect(g, 284, 172, 5, 4, '#dd3a2a'); frect(g, 293, 172, 5, 4, '#dd3a2a'); // tail lights
-  g.fillStyle = '#2a2218'; g.font = 'bold 6px monospace';
-  g.fillText('15', 302, 160);
+  frect(g, 302, 158, 14, 8, '#2a2218'); frect(g, 303, 159, 12, 6, '#e8b83a'); // rear number plate, blank
   ell(g, 290, 187, 5, 4, '#22201c'); ell(g, 312, 187, 5, 4, '#22201c');
   frect(g, 270, 184, 12, 2, '#8a8680');                      // exhaust puff line
   // the family, waiting on the lawn by the walk

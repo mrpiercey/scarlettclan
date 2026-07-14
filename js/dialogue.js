@@ -7,6 +7,7 @@
 var DLG = {
   queue: [], active: false, chars: 0, step: null,
   hoverChoice: -1, toastMsg: null, toastTimer: 0, toastItem: null,
+  anchor: 'bottom',        // 'top' docks the box up top (used when the scene's action is low)
 
   say: function(steps, onAllDone){
     for (var i = 0; i < steps.length; i++) this.queue.push(steps[i]);
@@ -58,7 +59,7 @@ var DLG = {
     var textH = lines.length * 9;
     var choicesH = s.choices ? s.choices.length * 11 + 3 : 0;
     var h = Math.max(portrait ? 66 : 34, textH + choicesH + 21);
-    var top = 196 - h;
+    var top = this.anchor === 'top' ? 4 : 196 - h;
     var rects = [];
     if (s.choices){
       var cy = top + 10 + textH + 4;
