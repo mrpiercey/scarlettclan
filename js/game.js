@@ -90,6 +90,7 @@ function travelTo(scene){
 
 // ---- save / load --------------------------------------------------------------
 function save(){
+  if (G.testMode) return;          // ?jump= test states never touch the real save
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
       scene: G.scene, x: G.x, y: G.y,
@@ -963,8 +964,45 @@ function drawPointer(){
   drawCursor(ctx, mouse.x, mouse.y, G.verb, G.activeItem);
 }
 
+// ---- test jump links (?jump=12 → SkyClan reveal, ?jump=15 → ready to finish) --------------
+// these never save, so they can't clobber a real playthrough
+(function(){
+  if (typeof location === 'undefined') return;
+  var m = /[?&]jump=([a-z0-9]+)/i.exec(location.search);
+  if (!m) return;
+  var f = G.flags;
+  var doneThrough12 = function(){
+    ['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12'].forEach(function(q){ f[q] = true; });
+    f.intro = true; f.map = true;
+    f.tickAsked = true; f.gotSnakeherb = true; f.snakecharmed = true;
+    f.nestReeds = true; f.nestFeather = true;
+    f.took_marigold = f.took_moss = f.took_stick = true;
+    f.took_driftwood = f.took_shinystone = f.took_reeds = f.took_feather = true;
+    f.took_clover = f.took_bileleaf = f.took_mossball = true;
+    f.took_frog = f.took_glowmoss = true;
+    G.inventory = ['stick', 'glowmoss'];
+  };
+  G.testMode = true;
+  if (m[1] === '12' || m[1].toLowerCase() === 'skyclan'){
+    doneThrough12();
+    G.collars = 12;
+    G.pendingReveal = true;                        // Lionheart announces SkyClan on arrival
+    travelTo('fourtrees');
+    DLG.toast('TEST MODE: 12 collars — SkyClan awaits (progress not saved)');
+  } else if (m[1] === '15' || /^(end|finale)$/i.test(m[1])){
+    doneThrough12();
+    ['q13','q14','q15'].forEach(function(q){ f[q] = true; });
+    f.skyAsked = true; f.gotHoney = true;
+    f.took_ancestorcollar = f.took_wetmoss = true;
+    G.collars = 15;
+    G.pendingReturn = true;                        // "bring them home to Lionheart" prompt
+    travelTo('fourtrees');
+    DLG.toast('TEST MODE: 15 collars — TALK to Lionheart to finish (progress not saved)');
+  }
+})();
+
 // ---- main loop --------------------------------------------------------------------------
-SND.playSong('title');       // intro music over the title screen (retried on first click if blocked)
+if (G.mode === 'title') SND.playSong('title');   // intro music over the title screen (retried on first click if blocked)
 function frame(){
   update();
   draw();
