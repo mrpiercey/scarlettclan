@@ -166,7 +166,7 @@ var BAR = [
   { id:'walk', x:8 },  { id:'look', x:36 }, { id:'talk', x:64 }, { id:'use', x:92 },
   { id:'item', x:120 }, { id:'inv', x:158 }, { id:'map', x:186 }, { id:'snd', x:214 }
 ];
-function barVisible(){ return G.mode === 'play' && mouse.y < 24 && !DLG.active; }
+function barVisible(){ return G.mode === 'play'; }   // the menu bar is always up during play
 function barButtonAt(mx, my){
   if (my > 22) return null;
   for (var i = 0; i < BAR.length; i++){
@@ -237,6 +237,7 @@ function closeInv(){ G.mode = 'play'; G.invSelect = null; }
 canvas.addEventListener('mousedown', function(e){
   if (e.button !== 0) return;
   var p = canvasPos(e), mx = p.x, my = p.y;
+  SND.retryPending();                          // first gesture unlocks any blocked music
 
   if (G.mode === 'title'){ titleClick(mx, my); return; }
   if (!SND.ready){ SND.init(); SND.playSong(SCENES[G.scene].music); }
@@ -320,20 +321,19 @@ function makeAction(verb, npc, hot){
 // ---- title ------------------------------------------------------------------------
 function titleClick(mx, my){
   SND.init();
+  SND.retryPending();                          // this click lets the intro music start
   if (G.hasSave && my > 182 && my < 200 && mx > 172 && mx < 262){
     load();
     G.mode = 'play';
     SND.playSong(SCENES[G.scene].music);
     return;
   }
-  if (my > 182 && my < 200 && mx > 58 && mx < 148){
+  var ngx = G.hasSave ? 58 : 115;
+  if (my > 182 && my < 200 && mx > ngx && mx < ngx + 90){
     startIntro();
     return;
   }
-  if (!G.hasSave){
-    // click anywhere starts new game if no save
-    startIntro();
-  }
+  // any other click just wakes the music and stays on the title
 }
 
 // ---- intro cutscene: Bus 15, home from Henry Clay High School --------------------------
@@ -637,22 +637,18 @@ function draw(){
     }
   }
 
-  // HUD: collar count
+  // scene name plate, tucked under the menu bar
   if (G.mode === 'play'){
-    frect(ctx, 262, 2, 54, 14, 'rgba(20,14,8,0.75)');
-    drawItem(ctx, 263, 1, 'collar');
-    ctx.fillStyle = PAL.gold2;
-    ctx.fillText(G.collars + ' / 15', 282, 5);
-    frect(ctx, 2, 2, 12 + SCENES[G.scene].name.length * 4.9, 12, 'rgba(20,14,8,0.65)');
+    frect(ctx, 2, 26, 12 + SCENES[G.scene].name.length * 4.9, 12, 'rgba(20,14,8,0.65)');
     ctx.fillStyle = '#e8dfc0';
-    ctx.fillText(SCENES[G.scene].name, 7, 4);
+    ctx.fillText(SCENES[G.scene].name, 7, 28);
   }
 
-  // icon bar
+  // icon bar (always up during play; collar count lives on its right end)
   if (barVisible()) drawBar();
 
   // hover label
-  if (G.mode === 'play' && !DLG.active && !barVisible()){
+  if (G.mode === 'play' && !DLG.active && mouse.y >= 24){
     var hn = npcAt(mouse.x, mouse.y), hh = hn ? null : hotspotAt(mouse.x, mouse.y);
     var label = hn ? CATS[hn.id].name : (hh ? hh.name : null);
     if (!label && G.verb === 'walk' && !G.exiting){
@@ -681,6 +677,13 @@ function drawBar(){
   frect(ctx, 0, 0, 320, 24, '#c8bca0');
   frect(ctx, 0, 22, 320, 2, '#5a4a34');
   frect(ctx, 0, 0, 320, 1, '#efe6cc');
+  // collar count on the right end of the bar
+  frect(ctx, 242, 2, 76, 18, '#b4a888');
+  frect(ctx, 242, 2, 76, 1, '#f4ecd4'); frect(ctx, 242, 19, 76, 1, '#6a5a44');
+  drawItem(ctx, 246, 3, 'collar');
+  ctx.fillStyle = '#3a2a18'; ctx.font = 'bold 8px monospace';
+  ctx.fillText(G.collars + ' / 15', 266, 8);
+  ctx.font = '8px monospace';
   var hov = barButtonAt(mouse.x, mouse.y);
   var KEYHINT = { walk:'1', look:'2', talk:'3', use:'4', item:'5', inv:'TAB', map:'M', snd:'S' };
   for (var i = 0; i < BAR.length; i++){
@@ -872,7 +875,8 @@ function drawEnding(){
 }
 
 function drawPointer(){
-  if (G.mode === 'title' || G.mode === 'map' || G.mode === 'inv' || DLG.active || barVisible()){
+  if (G.mode === 'title' || G.mode === 'map' || G.mode === 'inv' || DLG.active ||
+      (G.mode === 'play' && mouse.y < 24)){
     drawCursor(ctx, mouse.x, mouse.y, 'arrow');
     return;
   }
@@ -881,6 +885,7 @@ function drawPointer(){
 }
 
 // ---- main loop --------------------------------------------------------------------------
+SND.playSong('title');       // intro music over the title screen (retried on first click if blocked)
 function frame(){
   update();
   draw();

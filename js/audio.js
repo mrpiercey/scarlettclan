@@ -69,11 +69,47 @@ var SND = {
     for (var i = 0; i < oscs.length; i++){ oscs[i].start(when); oscs[i].stop(when + dur + 0.05); }
   },
 
+  // real soundtrack files (looping); the synth chiptunes below remain a fallback
+  files: {
+    title:    'intro.mp3',
+    night:    'backgroundmusic.mp3',
+    forest:   'backgroundmusic.mp3',
+    river:    'music2.mp3',
+    wind:     'music3.mp3',
+    shadow:   'shadowclanmusic.mp3',
+    sky:      'music2.mp3',
+    birthday: 'endingmusic.mp3'
+  },
+  audioCache: {}, fileAudio: null, pendingFile: null,
+
   playSong: function(name){
-    if (!this.ready) { this.current = name; return; }   // remembered until init
-    if (this.current === name && this.timer) return;
+    if (this.current === name && (this.timer || (this.fileAudio && !this.fileAudio.paused))) return;
     this.stopSong();
     this.current = name;
+    var file = this.files[name];
+    if (file){ this._playFile(file, name); return; }
+    this._playSynth(name);
+  },
+
+  _playFile: function(file, name){
+    var self = this;
+    try {
+      var a = this.audioCache[file] || (this.audioCache[file] = new Audio(file));
+      a.loop = true;                          // area music repeats
+      a.volume = 0.55;
+      a.muted = this.muted;
+      if (this.fileAudio === a && !a.paused) return;   // same track carries across scenes
+      this.fileAudio = a;
+      if (a.paused) a.currentTime = 0;
+      var p = a.play();
+      if (p && p.catch) p.catch(function(){
+        self.pendingFile = { file: file, name: name };  // autoplay blocked — retry on first click
+      });
+    } catch(e){ this._playSynth(name); }
+  },
+
+  _playSynth: function(name){
+    if (!this.ready) return;
     var song = SONGS[name];
     if (!song) return;
     var spu = 60 / (song.tempo * 2);  // seconds per eighth
@@ -97,14 +133,27 @@ var SND = {
     }, 120);
   },
 
+  // first user gesture: retry the title track the browser blocked on load
+  retryPending: function(){
+    if (this.pendingFile){
+      var pf = this.pendingFile;
+      this.pendingFile = null;
+      if (this.current === pf.name) this._playFile(pf.file, pf.name);
+    }
+  },
+
   stopSong: function(){
     if (this.timer){ clearInterval(this.timer); this.timer = null; }
+    if (this.fileAudio){ this.fileAudio.pause(); this.fileAudio = null; }
+    this.pendingFile = null;
     this.current = null;
   },
 
   toggleMute: function(){
     this.muted = !this.muted;
     if (this.master) this.master.gain.value = this.muted ? 0 : 0.16;
+    for (var f in this.audioCache) this.audioCache[f].muted = this.muted;
+    if (this._dingA) this._dingA.muted = this.muted;
   },
 
   // --- SFX ---

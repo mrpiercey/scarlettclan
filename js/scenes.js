@@ -108,7 +108,7 @@ var SCENES = {
     deco:[ {kit:true, x:152, y:172, spec:'smokekit'}, {kit:true, x:130, y:174, spec:'leopardstar'} ],
     hotspots:[
       {id:'river', x:232, y:104, w:88, h:92, name:'the river',
-        look:'Cool green water slides past. Deep in the shallows something glints gold...'},
+        look:'THE river — the great water that gives RiverClan its name, wrapped right around their island camp. Deep in the shallows something glints gold...'},
       {id:'reeds', x:210, y:140, w:34, h:52, name:'reeds',
         look:'Tall, tough river reeds — RiverClan weaves their dens and nests from these.'},
       {id:'feathers', x:170, y:120, w:28, h:16, name:'swan feathers',

@@ -284,15 +284,26 @@ ART.painters.fourtrees = function(g){
 };
 
 // ---- THUNDERCLAN CAMP (oak, Highrock & dens are occluders) ------------------
+// like the books: a sandy hollow at the foot of a ravine, deep in the forest
 ART.painters.thundercamp = function(g){
-  daySky(g, 100);
-  treeline(g, 100, 34, PAL.leaf1, PAL.leaf2);
+  daySky(g, 96);
+  treeline(g, 96, 36, PAL.leaf1, PAL.leaf2);
+  treeline(g, 100, 24, PAL.dark2, PAL.leaf1);
+  // the ravine wall the camp shelters beneath
+  bands(g, 0, 98, VW, 16, [PAL.dirt1, PAL.dirt2, PAL.dirt3]);
+  dither(g, 0, 98, VW, 16, PAL.sand1, 0.25);
+  frect(g, 0, 98, VW, 2, PAL.dark1);                         // shadowed lip
+  g.strokeStyle = PAL.trunk2; g.lineWidth = 1;
+  for (var rt = 0; rt < 7; rt++){                            // roots dangling over the edge
+    var rx0 = 18 + rt * 46;
+    g.beginPath(); g.moveTo(rx0, 99); g.quadraticCurveTo(rx0 + rndi(-4, 4), 104, rx0 + rndi(-6, 6), 108 + rndi(0, 4)); g.stroke();
+  }
   // gorse camp wall
-  blob(g, 300, 118, 30, 18, PAL.dark3, 8);
-  blob(g, 250, 110, 26, 14, PAL.leaf2, 6);
+  blob(g, 300, 122, 30, 18, PAL.dark3, 8);
+  blob(g, 250, 116, 26, 14, PAL.leaf2, 6);
   // sandy clearing
-  bands(g, 0, 112, VW, 88, [PAL.sand1, PAL.sand2, PAL.sand3, PAL.sand2]);
-  dither(g, 0, 112, VW, 88, PAL.dirt3, 0.12);
+  bands(g, 0, 114, VW, 86, [PAL.sand1, PAL.sand2, PAL.sand3, PAL.sand2]);
+  dither(g, 0, 114, VW, 86, PAL.dirt3, 0.12);
   // fresh-kill pile: an actual heap of prey
   ell(g, 191, 173, 16, 7, PAL.dirt2);
   ell(g, 185, 169, 6, 3.5, '#8a6a4a');                       // mouse body
@@ -375,6 +386,11 @@ ART.painters.rivercamp = function(g){
   px(g, 158, 188, '#b4a47c'); px(g, 168, 186, '#b4a47c');    // wood grain
   px(g, 152, 189, '#f0e4c0');
   path(g, 150, 200, 150, 112, 44, 10, PAL.dirt3, PAL.sand2);
+  // a side-stream curls around the camp's foot — RiverClan's island home
+  poly(g, [[0,191],[70,193],[132,197],[132,200],[0,200]], PAL.water2);
+  poly(g, [[0,193],[68,195],[128,198],[128,200],[0,200]], PAL.water3);
+  for (var st2 = 0; st2 < 8; st2++) frect(g, rndi(4, 120), 194 + rndi(0, 4), rndi(3, 6), 1, PAL.water4);
+  ell(g, 40, 195, 5, 2, PAL.rock4);                          // crossing stone
 };
 
 // ---- WINDCLAN CAMP (moor) --------------------------------------------------
@@ -432,6 +448,13 @@ ART.painters.shadowcamp = function(g){
   // marshy dark ground
   bands(g, 0, 100, VW, 100, [PAL.marsh1, PAL.marsh2, PAL.marsh2, PAL.marsh1]);
   dither(g, 0, 100, VW, 100, PAL.shadow2, 0.18);
+  // long pine shadows lie across everything — ShadowClan lives in the shade
+  g.globalAlpha = 0.22;
+  for (var shd = 0; shd < 6; shd++){
+    var sx0 = 8 + shd * 52;
+    poly(g, [[sx0, 100], [sx0 + 18, 100], [sx0 + 48, 200], [sx0 + 22, 200]], '#0a0e18');
+  }
+  g.globalAlpha = 1;
   // frog pond at the camp's edge: lily pads and a fat frog sunning itself
   ell(g, 66, 176, 36, 11, '#1c2c22');
   ell(g, 66, 176, 30, 9, '#24382c'); ell(g, 64, 175, 24, 6.5, '#2c4838');
