@@ -3,9 +3,9 @@
 A point-and-click adventure in the style of **King's Quest VI**, set in the world of
 the warrior cats — made for Scarlett's 15th birthday.
 
-One July afternoon — the day before her 15th birthday — Scarlett falls asleep on
-**Bus 15** riding home down Richmond Road after her big **summer swim meet**...
-and wakes up at Fourtrees, in the forest of the warrior clans. Lionheart of
+On July 14th — her 15th birthday — Scarlett falls asleep on **Bus 15** riding home
+down Richmond Road after her big **summer swim meet**... and wakes up at Fourtrees,
+in the forest of the warrior clans. Lionheart of
 StarClan needs her help: a great storm scattered the **15 collars of the first warriors**
 across the clans' camps — and tore the path between the worlds. Returning all fifteen to
 him is the **only way home**. Four clan camps hold 3 collars each; earn all twelve and

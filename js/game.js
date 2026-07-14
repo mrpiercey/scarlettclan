@@ -406,8 +406,8 @@ function startIntro(){
   G.introPhase = 0;
   SND.playSong('title');
   DLG.say([
-    N('3:47 PM, the middle of July. The big summer swim meet is over, and Bus 15 rumbles down Richmond Road — past the Chick-fil-A, past the McDonald\'s, past the Home Depot — carrying one very tired swim team home.'),
-    ME('Three races, two ribbons, and I dropped a whole second in the hundred free. My hair is still wet. And FIFTEEN tomorrow... Taylor Swift wrote a whole song about fifteen, and starting tomorrow it\'s literally MY track. Mom is probably taping up streamers right now.'),
+    N('3:47 PM, July 14th — Scarlett\'s fifteenth birthday. The big summer swim meet is over, and Bus 15 rumbles down Richmond Road — past the Chick-fil-A, past the McDonald\'s, past the Home Depot — carrying one very tired swim team home.'),
+    ME('Best birthday ever so far: three races, two ribbons, and I dropped a whole second in the hundred free. My hair is still wet. FIFTEEN today... Taylor Swift wrote a whole song about fifteen, and it is literally MY track now. Mom is taping up streamers for the party right this second.'),
     ME('I just wish this bus ride didn\'t take a hundred years. Should\'ve put on Laufey. Nothing makes a bus window feel like a music video faster than Laufey.'),
     N('The bus is warm. The seat hums. The trees smear past the window like green water...'),
     { who: null, text: 'Her eyes drift closed. Just for a second. Just... for... a... second...',
@@ -530,7 +530,7 @@ function beginWakeUp(){
   startFade('#fff', 60);       // starlight swells white, then the bus fades in
   DLG.say([
     N('...beep. Beep. The hiss of brakes. Warm afternoon sun through a smudged window.'),
-    N('"End of the line, hon!" calls the bus driver. Scarlett blinks awake in her old seat on Bus 15 — same swim bag, same July afternoon, the ride home from the swim meet... the day before her birthday.'),
+    N('"End of the line, hon!" calls the bus driver. Scarlett blinks awake in her old seat on Bus 15 — same swim bag, same golden July 14th afternoon... her fifteenth birthday, with the party still waiting.'),
     ME('I\'m back! The SAME ride home... but I remember all of it. Every camp. Every collar. Every whisker.'),
     { who:null, text:'She grabs her backpack and hops down the bus steps — and there, on the lawn in front of the dark blue house, her whole family is waiting.',
       effect: function(){ G.endPhase = 1; SND.playSong('birthday'); startFade('#000', 35); } },
