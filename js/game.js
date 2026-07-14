@@ -406,7 +406,7 @@ function startIntro(){
   G.introPhase = 0;
   SND.playSong('title');
   DLG.say([
-    N('3:47 PM. The last bell of Scarlett\'s very FIRST day at Henry Clay High School rang twenty minutes ago, and Bus 15 rumbles down the long road home.'),
+    N('3:47 PM. The last bell of Scarlett\'s very FIRST day at Henry Clay High School rang twenty minutes ago, and Bus 15 rumbles down Richmond Road — past the Chick-fil-A, past the McDonald\'s, past the Home Depot — on the long ride home.'),
     ME('First day of high school: survived. And fifteen tomorrow... Taylor Swift wrote a whole song about fifteen, and starting tomorrow it\'s literally MY track. Mom is probably taping up streamers right now.'),
     ME('I just wish this bus ride didn\'t take a hundred years. Should\'ve put on Laufey. Nothing makes a bus window feel like a music video faster than Laufey.'),
     N('The bus is warm. The seat hums. The trees smear past the window like green water...'),
@@ -886,10 +886,12 @@ function drawMap(){
 
 function drawIntro(){
   if (G.introPhase === 0){
-    ctx.drawImage(ART.get('bus'), 0, 0);
-    // gentle bus sway
-    var sway = Math.sin(tick * 0.08);
-    if (sway > 0.6){ frect(ctx, 0, 0, 320, 1, 'rgba(0,0,0,0.15)'); }
+    // Richmond Road rolls past: fixed camera, sliding lane dashes, spinning wheels
+    ctx.drawImage(ART.get('busride'), 0, 0);
+    var dashOff = (tick * 2.4) % 44;
+    ctx.fillStyle = '#e8e0c8';
+    for (var dx = -44 + dashOff; dx < 340; dx += 44) ctx.fillRect(dx, 160, 22, 3);
+    drawBusSprite(ctx, 56, 128 + Math.round(Math.sin(tick * 0.14) * 1.2), tick);
   } else {
     // asleep — dark screen with drifting Z's
     frect(ctx, 0, 0, 320, 200, '#050508');

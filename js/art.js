@@ -194,7 +194,132 @@ ART.painters.title = function(g){
   g.fillStyle = PAL.gold2;  g.fillText('THE 15 COLLARS', 118, 163);
 };
 
-// ---- BUS 15 (intro & the wake-up: riding home from Henry Clay) --------------
+// ---- RICHMOND ROAD (intro: the bus seen from outside, rolling home) ---------
+ART.painters.busride = function(g){
+  // warm afternoon sky
+  bands(g, 0, 0, VW, 50, [PAL.skyTop, PAL.skyHi, PAL.skyMid, PAL.skyLow]);
+  cloud(g, 60, 12, 24, '#eef4f8'); cloud(g, 200, 20, 30, '#e4eef6'); cloud(g, 290, 10, 18, '#eef4f8');
+  // base fill behind everything (no transparent pixels, ever)
+  bands(g, 0, 48, VW, 152, ['#b8c0ba', '#a8b0a8', '#5a564e', '#4c4842', '#443f39']);
+  treeline(g, 54, 14, PAL.leaf2, PAL.leaf3);
+  // --- the Richmond Road strip mall row ---
+  // Chick-fil-A: white walls, red roofline & sign
+  frect(g, 6, 56, 76, 42, '#f2eee6');
+  frect(g, 6, 56, 76, 5, '#d8d4cc');
+  frect(g, 2, 52, 84, 8, '#e4001b');                          // red fascia
+  frect(g, 10, 66, 68, 10, '#e4001b');                        // sign band
+  g.fillStyle = '#fff'; g.font = 'bold 7px monospace'; g.textBaseline = 'top';
+  g.fillText('Chick-fil-A', 13, 67);
+  frect(g, 14, 80, 14, 18, '#8ab4d8'); frect(g, 34, 80, 14, 18, '#8ab4d8');   // windows
+  frect(g, 56, 80, 16, 18, '#5a4a3a');                        // door
+  // McDonald's: gray box, mansard, golden arches on a pole
+  frect(g, 100, 60, 62, 38, '#d8d4cc');
+  frect(g, 96, 54, 70, 8, '#8a2a1e');                         // mansard roof
+  frect(g, 106, 70, 20, 16, '#8ab4d8'); frect(g, 134, 70, 20, 16, '#8ab4d8');
+  frect(g, 126, 86, 12, 12, '#5a5a5a');
+  frect(g, 90, 56, 3, 34, '#9a9a9a');                         // sign pole
+  g.fillStyle = '#f6c500'; g.font = 'bold 14px monospace';
+  g.fillText('M', 86, 40);
+  g.fillStyle = '#e4001b'; g.font = 'bold 5px monospace';
+  g.fillText("McDonald's", 104, 62);
+  // Home Depot: big orange box
+  frect(g, 178, 52, 118, 46, '#e8701e');
+  frect(g, 178, 52, 118, 4, '#c85a12');
+  g.fillStyle = '#fff'; g.font = 'bold 8px monospace';
+  g.fillText('THE HOME', 210, 58); g.fillText('DEPOT', 222, 68);
+  frect(g, 186, 78, 30, 20, '#3a3a44');                       // entrance
+  frect(g, 188, 80, 12, 18, '#7a8a9a'); frect(g, 202, 80, 12, 18, '#7a8a9a');
+  frect(g, 240, 80, 44, 12, '#c85a12');                       // garden center fence
+  for (var hd = 242; hd < 282; hd += 6) frect(g, hd, 82, 2, 10, '#e8701e');
+  // shrubs between the lots
+  blob(g, 92, 100, 10, 5, PAL.leaf2, 5); blob(g, 172, 100, 9, 5, PAL.leaf3, 5); blob(g, 302, 100, 12, 6, PAL.leaf2, 5);
+  // sidewalk + grass verge
+  bands(g, 0, 98, VW, 8, ['#c0bcb0', '#b0aca0']);
+  bands(g, 0, 106, VW, 6, [PAL.grass3, PAL.grass2]);
+  // RICHMOND RD street sign
+  frect(g, 292, 74, 2, 32, '#8a8a92');
+  frect(g, 276, 68, 40, 9, '#1e6a34');
+  frect(g, 276, 68, 40, 1, '#4a9a5e');
+  g.fillStyle = '#fff'; g.font = 'bold 5px monospace';
+  g.fillText('RICHMOND RD', 278, 70);
+  // the road itself (center dashes are drawn live in drawIntro so they slide)
+  bands(g, 0, 112, VW, 88, ['#5a564e', '#524e46', '#4a463e', '#423e38']);
+  dither(g, 0, 112, VW, 88, '#6a665c', 0.10);
+  frect(g, 0, 114, VW, 2, '#d8d0b8');                         // edge line
+};
+
+// the big yellow bus itself, drawn live so it can bob and roll (x = left edge, y = road contact)
+function drawBusSprite(g, x, y, t){
+  // exhaust puffing from the tailpipe (bus points left, so pipe is at the right)
+  var puff = (t / 8 | 0) % 3;
+  ell(g, x + 208 + puff * 6, y - 8 - puff * 2, 4 + puff * 2, 3 + puff, 'rgba(150,150,150,' + (0.4 - puff * 0.12) + ')');
+  // body
+  frect(g, x + 4, y - 48, 198, 38, '#f2be32');
+  frect(g, x + 4, y - 48, 198, 4, '#f8d874');                 // roof highlight
+  frect(g, x + 4, y - 12, 198, 2, '#c89422');                 // skirt shade
+  // short nose + bumper + grille
+  frect(g, x - 6, y - 36, 12, 24, '#f2be32');
+  frect(g, x - 6, y - 36, 12, 3, '#c89422');
+  frect(g, x - 9, y - 16, 8, 5, '#8a8a92');                   // bumper
+  frect(g, x - 5, y - 30, 3, 10, '#5a564e');                  // grille
+  px(g, x - 5, y - 33, '#f8f4e0');                            // headlight
+  // rub rails
+  frect(g, x + 4, y - 28, 198, 2, '#2a2620');
+  frect(g, x + 4, y - 18, 198, 2, '#2a2620');
+  // windshield + driver
+  frect(g, x + 7, y - 46, 13, 17, '#3a4a5e');
+  frect(g, x + 7, y - 46, 13, 2, '#5a6a7e');
+  frect(g, x + 10, y - 40, 7, 6, '#8a6a4a');                  // driver's head (cap)
+  frect(g, x + 10, y - 42, 7, 3, '#3a3a44');
+  // passenger windows with the kids' faces
+  var hairC = ['#3a2a1a', '#c05a2a', '#e8d48a', '#1a1a20', '#6a4226', '#8a5c36'];
+  for (var wI = 0; wI < 6; wI++){
+    var wx = x + 28 + wI * 27;
+    frect(g, wx, y - 44, 21, 15, '#4a6a8e');
+    frect(g, wx, y - 44, 21, 2, '#7a92ac');                   // glass shine
+    if (wI === 3){
+      // Scarlett, dozing against the glass: long brown hair, tipped head
+      frect(g, wx + 3, y - 40, 12, 10, '#6a4226');
+      frect(g, wx + 5, y - 37, 8, 7, '#e8b48e');
+      frect(g, wx + 6, y - 34, 2, 1, '#5a3a20'); frect(g, wx + 10, y - 34, 2, 1, '#5a3a20');  // closed eyes
+      frect(g, wx + 13, y - 39, 3, 9, '#8a5c36');             // hair against the window
+    } else {
+      // another kid on the ride home
+      frect(g, wx + 6, y - 39, 8, 8, ['#e8b48e', '#c88a62', '#e8c098', '#a86a42', '#e8b48e', '#d09a72'][wI]);
+      frect(g, wx + 5, y - 41, 10, 4, hairC[wI]);
+      px(g, wx + 8, y - 36, '#2a2a30'); px(g, wx + 11, y - 36, '#2a2a30');
+    }
+  }
+  // lettering + number
+  g.fillStyle = '#2a2620'; g.font = 'bold 6px monospace'; g.textBaseline = 'top';
+  g.fillText('FAYETTE CO SCHOOLS', x + 40, y - 26);
+  g.fillStyle = '#2a2620'; g.font = 'bold 9px monospace';
+  g.fillText('15', x + 184, y - 45);
+  // roof flashers
+  px(g, x + 6, y - 50, '#e43a2a'); px(g, x + 198, y - 50, '#e43a2a');
+  // wheels, spinning
+  var wheels = [x + 42, x + 168];
+  for (var wh = 0; wh < 2; wh++){
+    var cx = wheels[wh];
+    ell(g, cx, y - 2, 10, 10, '#1a1a1e');
+    ell(g, cx, y - 2, 4.5, 4.5, '#8a8a92');
+    var a = t * 0.35 + wh;
+    g.strokeStyle = '#4a4a52'; g.lineWidth = 1.5;
+    g.beginPath();
+    g.moveTo(cx - Math.cos(a) * 4, y - 2 - Math.sin(a) * 4);
+    g.lineTo(cx + Math.cos(a) * 4, y - 2 + Math.sin(a) * 4);
+    g.moveTo(cx - Math.cos(a + 1.57) * 4, y - 2 - Math.sin(a + 1.57) * 4);
+    g.lineTo(cx + Math.cos(a + 1.57) * 4, y - 2 + Math.sin(a + 1.57) * 4);
+    g.stroke();
+  }
+  // speed streaks trailing behind
+  g.fillStyle = 'rgba(255,255,255,0.5)';
+  for (var st = 0; st < 4; st++){
+    g.fillRect(x + 205 + ((t * 3 + st * 17) % 30), y - 40 + st * 9, 10 + st * 2, 1);
+  }
+}
+
+// ---- BUS 15 interior (the wake-up: same bus, from Scarlett's seat) ----------
 ART.painters.bus = function(g){
   // ceiling + handrail
   bands(g, 0, 0, VW, 26, ['#d0ccbc', '#c0bcac', '#b0ac9c']);
