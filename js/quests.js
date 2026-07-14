@@ -379,7 +379,7 @@ var QUESTS = {
       return true;
     }
     SND.err();
-    DLG.say([N('That doesn\'t seem to help here.')]);
+    DLG.say([N('That doesn\'t seem to help here. (Stuck? The glowing ? button up top always knows what to try next!)')]);
     return true;
   },
 
@@ -400,8 +400,136 @@ var QUESTS = {
     return true;
   },
 
+  // ---- SCENE HINTS -----------------------------------------------------------
+  // every unsolved puzzle on the current screen has a hint: cats gossip about
+  // them after their own dialogue, and the HELP button turns them into
+  // Scarlett's sudden ideas. Each entry returns null once solved.
+  sceneHints: {
+    thundercamp: [
+      function(f){ if (f.q1) return null; return { who:'cinderpelt',
+        gossip:'Every whisker in camp is twitching about it: Cinderpelt needs fresh MARIGOLD for Rosekit\'s paw, and it grows right there by the nursery.',
+        idea:'I should gather the marigold by the nursery and give it to Cinderpelt.' }; },
+      function(f){ if (f.q2) return null; return { who:'snowkit',
+        gossip:'Poor Snowkit wails about his treasure stuck at the TOP of the old oak. That storm-fallen branch lying by Highrock looks long enough to reach...',
+        idea:'I should use the fallen branch on the old oak and knock Snowkit\'s treasure down.' }; },
+      function(f){ if (f.q3) return null; return { who:'mousefur',
+        gossip:'A thieving mouse lives in the little hole by the fresh-kill pile. Mousefur swears she\'d catch it if some clever soul plugged the hole — the mossy bank by the warriors\' den is RIGHT there.',
+        idea:'I should plug the small hole with moss from the mossy bank — Mousefur will handle the rest.' }; }
+    ],
+    rivercamp: [
+      function(f){ if (f.q4) return null; return { who:'leopardstar',
+        gossip:'Gold glints out in the deep current, but no paw can reach it. That driftwood branch on the bank has a fine hook on the end of it...',
+        idea:'I should use the driftwood branch on the river and fish out whatever glitters down there.' }; },
+      function(f){ if (f.q5) return null; return { who:'mosspelt',
+        gossip:'Mosspelt\'s kits dream of a star-stone. Between two of the stepping stones there\'s a dark little gap — and something in it SPARKLES.',
+        idea:'I should reach under the smooth stones and bring whatever sparkles to Mosspelt.' }; },
+      function(f){ if (f.q6) return null; return { who:'graypool',
+        gossip:'Old Graypool shivers in that threadbare nest. Fresh reeds grow on our own bank, and a swan left its softest feathers here at dawn...',
+        idea:'I should gather the reeds AND the swan feathers, and use both on Graypool\'s nest.' }; }
+    ],
+    windcamp: [
+      function(f){ if (f.q7) return null; return { who:'tallstar',
+        gossip:'A collar sits in the rabbit warren under the smuggest rabbit on the moor. Nothing moves a rabbit like the sweet clover growing in the camp hollow.',
+        idea:'I should pick the sweet clover and use it on the rabbit warren.' }; },
+      function(f){
+        if (f.q8) return null;
+        if (!f.tickAsked) return { who:'morningflower',
+          gossip:'Morningflower has been scratching that shoulder for a MOON. Someone ought to hear her out before she wears her fur off.',
+          idea:'I should talk to Morningflower and hear about that tick of hers.' };
+        return { who:'barkface',
+          gossip:'The mouse-bile leaf for Morningflower\'s tick is set out at the front of Barkface\'s herb store. Whoever fetches it should NOT sniff it.',
+          idea:'I should take the mouse-bile leaf from the herb store and use it on Morningflower.' };
+      },
+      function(f){ if (f.q9) return null; return { who:'gorsepaw',
+        gossip:'Gorsepaw pounces like a falling log, bless him. Kits learn on moss-balls — that mossy boulder would roll a fine one.',
+        idea:'I should roll a moss-ball from the mossy boulder and give it to Gorsepaw.' }; }
+    ],
+    shadowcamp: [
+      function(f){ if (f.q10) return null; return { who:'russetfur',
+        gossip:'Russetfur respects exactly one thing: hunters. Fat frogs sun themselves on the pond at the camp\'s edge...',
+        idea:'I should catch a frog at the pond — bare hands, warrior style — and give it to Russetfur.' }; },
+      function(f){
+        if (f.q11) return null;
+        if (!f.gotSnakeherb) return { who:'littlecloud',
+          gossip:'The elders\' den has been dark all winter. Glow-moss shines inside Snakerocks — but only Littlecloud knows how to keep the snakes off. Ask him.',
+          idea:'I should talk to Littlecloud and get his snake-charm herb.' };
+        if (!f.snakecharmed) return { who:'littlecloud',
+          gossip:'That herb of Littlecloud\'s does nothing in a pocket. Crush it OVER Snakerocks and the adders will keep to their cracks.',
+          idea:'I should use the snake-charm herb on Snakerocks.' };
+        if (!f.took_glowmoss) return { who:'littlecloud',
+          gossip:'The snakes are sulking deep in the rocks now. The glow-moss in that crevice is free for the taking.',
+          idea:'I should reach into Snakerocks and gather the glow-moss.' };
+        return { who:'blackstar',
+          gossip:'Blackstar\'s elders still sit in the dark. Someone is carrying glowing moss around this very camp...',
+          idea:'I should give the glow-moss to Blackstar.' };
+      },
+      function(f){ if (f.q12) return null; return { who:'blackstar',
+        gossip:'Little Smokekit has been missing for three days — and something SNEEZED inside the old fox den. It\'s black as a badger\'s dreams in there... a light would help.',
+        idea:'I should hold something glowing into the old fox den.' }; }
+    ],
+    skycamp: [
+      function(f){
+        if (f.q13) return null;
+        if (!f.skyAsked) return { who:'leafstar',
+          gossip:'SkyClan came home with only two of its three collars. Leafstar knows the old stories of where the lost one sleeps — ask her.',
+          idea:'I should talk to Leafstar about SkyClan\'s lost collar.' };
+        if (!f.took_ancestorcollar) return { who:'leafstar',
+          gossip:'Below the cliff caves, where the morning sun first touches the sand, the earth looks freshly turned...',
+          idea:'I should dig at the patch of turned earth below the cliff caves.' };
+        return { who:'leafstar',
+          gossip:'That old collar hums like it knows where it belongs. Leafstar should see it.',
+          idea:'I should give the ancestors\' collar to Leafstar.' };
+      },
+      function(f){
+        if (f.q14) return null;
+        if (!f.gotHoney) return { who:'sharpclaw',
+          gossip:'Sharpclaw builds from dawn to dusk on an empty belly, dreaming of honey. Bees go dozy in the cold... and that spring by camp runs ICE cold.',
+          idea:'I should soak up the spring moss and press it on the wild beehive.' };
+        return { who:'sharpclaw',
+          gossip:'Someone around here smells like fresh honeycomb. Sharpclaw would trade his tail for it.',
+          idea:'I should give the honeycomb to Sharpclaw.' };
+      },
+      function(f){ if (f.q15) return null; return { who:'echosong',
+        gossip:'Echosong keeps the final collar for the Trial of Trust — but she won\'t hold the trial until Leafstar and Sharpclaw are seen to.',
+        idea:'I should finish helping Leafstar and Sharpclaw, then talk to Echosong and take the Trial of Trust.' }; }
+    ],
+    fourtrees: [
+      function(f){
+        if (G.collars >= 15 && f.q15 && !f.ceremonyDone) return { who:'lionheart',
+          gossip:'All fifteen collars, warm as suns... Lionheart is waiting.',
+          idea:'I should give Lionheart all fifteen collars — that\'s my ride home!' };
+        return null;
+      }
+    ]
+  },
+
+  hintsFor: function(scene){
+    var defs = this.sceneHints[scene] || [], out = [];
+    for (var i = 0; i < defs.length; i++){
+      var h = defs[i](G.flags);
+      if (h) out.push(h);
+    }
+    return out;
+  },
+
   // ---- TALK ---------------------------------------------------------------
+  // every cat, after its own dialogue, gossips about one unsolved puzzle on
+  // this screen (rotating through them, preferring someone ELSE's troubles)
   talk: function(id){
+    this._talk(id);
+    if (!window.CATS || !CATS[id]) return;
+    if (id === 'lionheart' || id === 'echosong') return;   // they run their own shows
+    var hs = this.hintsFor(G.scene);
+    if (!hs.length) return;
+    var others = [];
+    for (var i = 0; i < hs.length; i++) if (hs[i].who !== id) others.push(hs[i]);
+    var pool = others.length ? others : hs;
+    G.flags.hintIdx = (G.flags.hintIdx || 0) + 1;
+    var h = pool[G.flags.hintIdx % pool.length];
+    DLG.say([ CAT(id, 'Mrrow — one more thing. ' + h.gossip) ]);
+  },
+
+  _talk: function(id){
     var f = G.flags;
 
     // ---------- Lionheart: intro + hints + the way home ----------
@@ -421,7 +549,7 @@ var QUESTS = {
           ME('Oh no. You\'re a dad-joke cat. My dad is going to LOVE that you exist.'),
           CAT('lionheart', 'The map of the territories is in your mind now. Four camps hold three collars each — earn them by helping the clans; everything each clan needs can be found in its own camp. When twelve shine, the last secret of the forest will reveal itself.'),
           CAT('lionheart', 'Begin with ThunderClan, my own clan; Firestar expects you. And return to me whenever you are lost — I will light your way.'),
-          N('(TIP: The numbers switch actions — 1 Walk, 2 Look, 3 Talk, 4 Use, 5 carried item. Right-click also cycles them. TAB opens your backpack, M the map — or simply walk off the edge of the screen into the next territory.)')
+          N('(TIP: The buttons up top do everything — or press 1 Walk, 2 Look, 3 Talk, 4 Use, 5 carried item. TAB opens your backpack, M the map — or simply walk off the edge of the screen into the next territory. And whenever you\'re stuck, the glowing ? button gives Scarlett an idea!)')
         ]);
         return;
       }

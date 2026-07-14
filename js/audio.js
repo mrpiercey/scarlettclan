@@ -7,13 +7,21 @@
 var SND = {
   ctx: null, master: null, muted: false, ready: false,
   current: null, timer: null, tracks: [],
+  musicVol: (function(){ var v = parseFloat(localStorage.getItem('scarlettvol')); return isNaN(v) ? 0.8 : v; })(),
+
+  setVolume: function(v){
+    this.musicVol = Math.max(0, Math.min(1, v));
+    try { localStorage.setItem('scarlettvol', this.musicVol); } catch(e){}
+    if (this.master) this.master.gain.value = this.muted ? 0 : 0.16 * this.musicVol;
+    for (var f in this.audioCache) this.audioCache[f].volume = 0.7 * this.musicVol;
+  },
 
   init: function(){
     if (this.ready) return;
     var AC = window.AudioContext || window.webkitAudioContext;
     this.ctx = new AC();
     this.master = this.ctx.createGain();
-    this.master.gain.value = 0.16;
+    this.master.gain.value = this.muted ? 0 : 0.16 * this.musicVol;
     this.master.connect(this.ctx.destination);
     this.ready = true;
   },
@@ -96,7 +104,7 @@ var SND = {
     try {
       var a = this.audioCache[file] || (this.audioCache[file] = new Audio(file));
       a.loop = true;                          // area music repeats
-      a.volume = 0.55;
+      a.volume = 0.7 * this.musicVol;
       a.muted = this.muted;
       if (this.fileAudio === a && !a.paused) return;   // same track carries across scenes
       this.fileAudio = a;
@@ -151,7 +159,7 @@ var SND = {
 
   toggleMute: function(){
     this.muted = !this.muted;
-    if (this.master) this.master.gain.value = this.muted ? 0 : 0.16;
+    if (this.master) this.master.gain.value = this.muted ? 0 : 0.16 * this.musicVol;
     for (var f in this.audioCache) this.audioCache[f].muted = this.muted;
     if (this._dingA) this._dingA.muted = this.muted;
   },

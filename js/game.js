@@ -163,14 +163,33 @@ function tryEdgeTravel(side, target){
 
 // ---- icon bar ---------------------------------------------------------------------
 var BAR = [
-  { id:'walk', x:8 },  { id:'look', x:36 }, { id:'talk', x:64 }, { id:'use', x:92 },
-  { id:'item', x:120 }, { id:'inv', x:158 }, { id:'map', x:186 }, { id:'snd', x:214 }
+  { id:'walk', x:2, w:24 },  { id:'look', x:28, w:24 }, { id:'talk', x:54, w:24 }, { id:'use', x:80, w:24 },
+  { id:'item', x:106, w:24 }, { id:'inv', x:134, w:24 }, { id:'map', x:162, w:28 }, { id:'snd', x:194, w:38 },
+  { id:'help', x:236, w:24 }
 ];
+var VOL = { open: false, x: 190, y: 26, w: 108, h: 20, tx: 200, tw: 80 };   // music volume slider panel
+
+// ---- HELP: Scarlett gets a sudden idea about an unsolved puzzle HERE --------
+function showHelp(){
+  if (DLG.active || G.mode === 'ending' || G.mode === 'ceremony') return;
+  if (G.mode === 'map' || G.mode === 'inv') G.mode = 'play';
+  var hs = QUESTS.hintsFor(G.scene);
+  if (!hs.length){
+    DLG.say([
+      { who:'scarlett', text:'Scarlett concentrates... nothing. Every task in this territory is done! The stars nudge her toward the screen edges — or the map (M).' }
+    ]);
+    return;
+  }
+  G.flags.helpIdx = (G.flags.helpIdx || 0) + 1;
+  var h = hs[G.flags.helpIdx % hs.length];
+  var lead = (G.flags.helpIdx % 2 === 0) ? 'Scarlett suddenly has an idea: "' : 'Scarlett receives a premonition: "';
+  DLG.say([ { who:'scarlett', text: lead + h.idea + '"' } ]);
+}
 function barVisible(){ return G.mode === 'play'; }   // the menu bar is always up during play
 function barButtonAt(mx, my){
   if (my > 22) return null;
   for (var i = 0; i < BAR.length; i++){
-    if (mx >= BAR[i].x && mx <= BAR[i].x + 24) return BAR[i].id;
+    if (mx >= BAR[i].x && mx <= BAR[i].x + BAR[i].w) return BAR[i].id;
   }
   return null;
 }
@@ -217,6 +236,7 @@ document.addEventListener('keydown', function(e){
   if (e.key === 'm' || e.key === 'M') toggleMap();
   if (e.key === 'i' || e.key === 'I') toggleInv();
   if (e.key === 's' || e.key === 'S') SND.toggleMute();
+  if (e.key === 'h' || e.key === 'H') showHelp();
   if (e.key === 'Escape'){ if (G.mode === 'map' || G.mode === 'inv') G.mode = 'play'; }
   if (e.key === ' ' || e.key === 'Enter'){ if (DLG.active) DLG.click(-1, -1); }
 });
@@ -249,6 +269,18 @@ canvas.addEventListener('mousedown', function(e){
   if (G.mode === 'ending') return;
   if (G.mode !== 'play') return;
 
+  // volume slider panel (open under the MUSIC button)
+  if (VOL.open){
+    if (mx >= VOL.x && mx <= VOL.x + VOL.w && my >= VOL.y && my <= VOL.y + VOL.h){
+      var v = Math.max(0, Math.min(1, (mx - VOL.tx) / VOL.tw));
+      SND.setVolume(v);
+      if (SND.muted) SND.toggleMute();          // moving the slider un-mutes
+      return;
+    }
+    VOL.open = false;                           // click anywhere else closes it
+    if (my < 24 && barButtonAt(mx, my) === 'snd') return;
+  }
+
   // icon bar
   if (barVisible() && my < 24){
     var b = barButtonAt(mx, my);
@@ -256,7 +288,8 @@ canvas.addEventListener('mousedown', function(e){
     else if (b === 'item'){ if (G.activeItem) G.verb = 'item'; else DLG.toast('Pick an item from your backpack first! (TAB)'); }
     else if (b === 'inv') toggleInv();
     else if (b === 'map') toggleMap();
-    else if (b === 'snd'){ SND.toggleMute(); DLG.toast(SND.muted ? 'Music off' : 'Music on'); }
+    else if (b === 'snd') VOL.open = !VOL.open;
+    else if (b === 'help') showHelp();
     return;
   }
 
@@ -617,14 +650,13 @@ function draw(){
     }
   }
 
-  // sparkles on available pickups — drawn over everything so they always show
+  // twinkles on available pickups — a real 4-point star that pulses
   if (G.mode === 'play'){
     var hs = sc.hotspots;
     for (var i = 0; i < hs.length; i++){
       var h = hs[i];
-      if (QUESTS.isPickup(h.id) && (tick / 24 | 0) % 3 !== 2){
-        var sx = h.x + h.w / 2 + Math.sin(tick * 0.1 + i) * 3, sy = h.y + h.h / 2;
-        px(ctx, sx, sy, '#fff'); px(ctx, sx - 2, sy + 1, PAL.gold2); px(ctx, sx + 2, sy - 1, PAL.gold2);
+      if (QUESTS.isPickup(h.id)){
+        drawSparkle(ctx, h.x + h.w / 2, h.y + h.h / 2, tick + i * 11);
       }
     }
   }
@@ -678,24 +710,26 @@ function drawBar(){
   frect(ctx, 0, 22, 320, 2, '#5a4a34');
   frect(ctx, 0, 0, 320, 1, '#efe6cc');
   // collar count on the right end of the bar
-  frect(ctx, 242, 2, 76, 18, '#b4a888');
-  frect(ctx, 242, 2, 76, 1, '#f4ecd4'); frect(ctx, 242, 19, 76, 1, '#6a5a44');
-  drawItem(ctx, 246, 3, 'collar');
+  frect(ctx, 270, 2, 48, 18, '#b4a888');
+  frect(ctx, 270, 2, 48, 1, '#f4ecd4'); frect(ctx, 270, 19, 48, 1, '#6a5a44');
+  drawItem(ctx, 272, 3, 'collar');
   ctx.fillStyle = '#3a2a18'; ctx.font = 'bold 8px monospace';
-  ctx.fillText(G.collars + ' / 15', 266, 8);
+  ctx.fillText(G.collars + '/15', 291, 8);
   ctx.font = '8px monospace';
   var hov = barButtonAt(mouse.x, mouse.y);
-  var KEYHINT = { walk:'1', look:'2', talk:'3', use:'4', item:'5', inv:'TAB', map:'M', snd:'S' };
+  var KEYHINT = { walk:'1', look:'2', talk:'3', use:'4', item:'5', inv:'TAB', help:'H' };
   for (var i = 0; i < BAR.length; i++){
     var b = BAR[i];
-    var active = (G.verb === b.id) || (b.id === 'item' && G.verb === 'item');
-    frect(ctx, b.x, 2, 24, 18, active ? '#8a7a5a' : (hov === b.id ? '#e2d6b4' : '#b4a888'));
-    frect(ctx, b.x, 2, 24, 1, '#f4ecd4'); frect(ctx, b.x, 19, 24, 1, '#6a5a44');
+    var active = (G.verb === b.id) || (b.id === 'item' && G.verb === 'item') || (b.id === 'snd' && VOL.open);
+    frect(ctx, b.x, 2, b.w, 18, active ? '#8a7a5a' : (hov === b.id ? '#e2d6b4' : '#b4a888'));
+    frect(ctx, b.x, 2, b.w, 1, '#f4ecd4'); frect(ctx, b.x, 19, b.w, 1, '#6a5a44');
     // key hint in the corner
-    ctx.font = '6px monospace';
-    ctx.fillStyle = active ? '#f4ecd4' : '#6a5a44';
-    ctx.fillText(KEYHINT[b.id], b.x + (KEYHINT[b.id].length > 1 ? 12 : 19), 3);
-    ctx.font = '8px monospace';
+    if (KEYHINT[b.id]){
+      ctx.font = '6px monospace';
+      ctx.fillStyle = active ? '#f4ecd4' : '#6a5a44';
+      ctx.fillText(KEYHINT[b.id], b.x + b.w - (KEYHINT[b.id].length > 1 ? 12 : 5), 3);
+      ctx.font = '8px monospace';
+    }
     var cx = b.x + 6, cy = 5;
     if (b.id === 'walk') drawCursor(ctx, cx, cy, 'walk');
     else if (b.id === 'look') drawCursor(ctx, cx, cy + 2, 'look');
@@ -709,16 +743,43 @@ function drawBar(){
       frect(ctx, cx, cy + 3, 12, 9, '#8a5c2e'); frect(ctx, cx, cy + 3, 12, 3, '#6a4422');
       frect(ctx, cx + 4, cy + 1, 4, 3, '#6a4422');
     }
-    else if (b.id === 'map'){ // little map
-      frect(ctx, cx, cy + 2, 12, 10, '#e2d0a2');
-      px(ctx, cx + 3, cy + 5, PAL.leaf2); px(ctx, cx + 8, cy + 7, PAL.water3); px(ctx, cx + 6, cy + 4, PAL.rock3);
+    else if (b.id === 'map'){
+      ctx.fillStyle = '#3a2a18'; ctx.font = 'bold 8px monospace';
+      ctx.fillText('MAP', b.x + 5, 8);
+      ctx.font = '8px monospace';
     }
-    else if (b.id === 'snd'){ // note
-      frect(ctx, cx + 6, cy + 2, 2, 9, SND.muted ? '#8a7a64' : '#3a2a18');
-      ell(ctx, cx + 5, cy + 11, 2.5, 2, SND.muted ? '#8a7a64' : '#3a2a18');
-      frect(ctx, cx + 6, cy + 2, 5, 2, SND.muted ? '#8a7a64' : '#3a2a18');
-      if (SND.muted){ ctx.strokeStyle = '#a83a2a'; ctx.beginPath(); ctx.moveTo(cx, cy + 12); ctx.lineTo(cx + 13, cy + 1); ctx.stroke(); }
+    else if (b.id === 'snd'){
+      ctx.fillStyle = (SND.muted || SND.musicVol === 0) ? '#7a6a54' : '#3a2a18';
+      ctx.font = 'bold 8px monospace';
+      ctx.fillText('MUSIC', b.x + 5, 8);
+      ctx.font = '8px monospace';
+      if (SND.muted || SND.musicVol === 0){
+        ctx.strokeStyle = '#a83a2a'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(b.x + 4, 15); ctx.lineTo(b.x + 34, 8); ctx.stroke();
+      }
     }
+    else if (b.id === 'help'){ // glowing "?"
+      ell(ctx, cx + 6, cy + 6, 5.5, 5.5, '#8a6614');
+      ell(ctx, cx + 6, cy + 6, 4.5, 4.5, PAL.gold2);
+      ctx.fillStyle = '#3a2a18'; ctx.font = 'bold 9px monospace';
+      ctx.fillText('?', cx + 3.5, cy + 2);
+      ctx.font = '8px monospace';
+    }
+  }
+  // volume slider, dropped down under the MUSIC button
+  if (VOL.open){
+    frect(ctx, VOL.x, VOL.y, VOL.w, VOL.h, '#c8bca0');
+    frect(ctx, VOL.x, VOL.y, VOL.w, 1, '#f4ecd4');
+    frect(ctx, VOL.x, VOL.y + VOL.h - 1, VOL.w, 1, '#5a4a34');
+    frect(ctx, VOL.x, VOL.y, 1, VOL.h, '#5a4a34'); frect(ctx, VOL.x + VOL.w - 1, VOL.y, 1, VOL.h, '#5a4a34');
+    frect(ctx, VOL.tx, VOL.y + 9, VOL.tw, 3, '#6a5a44');                       // track
+    frect(ctx, VOL.tx, VOL.y + 9, VOL.tw * SND.musicVol, 3, PAL.gold);         // fill
+    var kx = VOL.tx + VOL.tw * SND.musicVol;
+    frect(ctx, kx - 2, VOL.y + 5, 4, 11, '#3a2a18');                           // knob
+    frect(ctx, kx - 1, VOL.y + 6, 2, 9, PAL.gold2);
+    ctx.fillStyle = '#3a2a18'; ctx.font = '6px monospace';
+    ctx.fillText('-', VOL.x + 4, VOL.y + 7); ctx.fillText('+', VOL.x + VOL.w - 8, VOL.y + 7);
+    ctx.font = '8px monospace';
   }
 }
 
@@ -872,6 +933,24 @@ function drawEnding(){
     ctx.fillText('(press R to play it all again)', 150, 189);
   }
   DLG.draw(ctx, tick);
+}
+
+// a pulsing 4-point twinkle: rays grow and shrink, white-hot tips, a wink between pulses
+function drawSparkle(g, x, y, t){
+  x |= 0; y |= 0;
+  var ph = ((t / 6) | 0) % 8;
+  var r = [1, 2, 3, 3, 2, 1, 1, 0][ph];
+  if (r === 0){ px(g, x, y, '#fff'); return; }             // brief wink
+  for (var k = 1; k <= r; k++){
+    var c = (k === r) ? '#fff' : PAL.gold2;
+    px(g, x + k, y, c); px(g, x - k, y, c);
+    px(g, x, y + k, c); px(g, x, y - k, c);
+  }
+  if (r >= 2){                                              // diagonal glints at full bloom
+    px(g, x + 1, y + 1, PAL.gold); px(g, x - 1, y - 1, PAL.gold);
+    px(g, x + 1, y - 1, PAL.gold); px(g, x - 1, y + 1, PAL.gold);
+  }
+  px(g, x, y, '#fff');
 }
 
 function drawPointer(){

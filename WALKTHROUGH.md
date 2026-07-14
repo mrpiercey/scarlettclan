@@ -1,5 +1,9 @@
 # Walkthrough (SPOILERS — for parental emergencies only!)
 
+**You may never need this:** the glowing **? (HELP)** button on the top bar gives
+Scarlett a direct idea about any unsolved puzzle on the current screen, and every
+cat's chatter ends with a hint about the camp's remaining tasks.
+
 Every collar: **talk to the cat first** (press 3), then fetch what they need. Items are
 picked up with **Use (4)** — and every camp contains everything its own quests need, so
 nothing ever has to be carried between camps. Give items by carrying them
