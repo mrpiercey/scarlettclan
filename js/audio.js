@@ -80,6 +80,7 @@ var SND = {
   // real soundtrack files (looping); the synth chiptunes below remain a fallback
   files: {
     title:    'intro.mp3',
+    busride:  'music3.mp3',
     night:    'backgroundmusic.mp3',
     forest:   'backgroundmusic.mp3',
     river:    'music2.mp3',
@@ -118,7 +119,7 @@ var SND = {
 
   _playSynth: function(name){
     if (!this.ready) return;
-    var song = SONGS[name];
+    var song = SONGS[name] || SONGS.title;
     if (!song) return;
     var spu = 60 / (song.tempo * 2);  // seconds per eighth
     var self = this;

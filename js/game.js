@@ -404,7 +404,7 @@ function startIntro(){
   G.inventory = []; G.collars = 0; G.flags = {};
   G.mode = 'intro';
   G.introPhase = 0;
-  SND.playSong('title');
+  SND.playSong('busride');           // the ride home gets its own track (intro.mp3 stays on the title)
   DLG.say([
     N('3:47 PM, July 14th — Scarlett\'s fifteenth birthday. The big summer swim meet is over, and Bus 15 rumbles down Richmond Road — past the Chick-fil-A, past the McDonald\'s, past the Home Depot — carrying one very tired swim team home.'),
     ME('Best birthday ever so far: three races, two ribbons, and I dropped a whole second in the hundred free. My hair is still wet. FIFTEEN today... Taylor Swift wrote a whole song about fifteen, and it is literally MY track now. Mom is taping up streamers for the party right this second.'),
