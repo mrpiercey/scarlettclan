@@ -46,6 +46,8 @@ var G = {
         this.ty = Math.min(196, sd.y + sd.h + 2);
       }
     }
+    var fc = floorClamp(this.scene, this.tx, this.ty);
+    this.tx = fc[0]; this.ty = fc[1];
     this.walking = true;
     this.onArrive = cb || null;
   }
@@ -120,7 +122,7 @@ function visibleNpcs(){
 function npcAt(mx, my){
   var ns = visibleNpcs();
   for (var i = ns.length - 1; i >= 0; i--){
-    var n = ns[i], w = 16 * (n.s || 1), h = (n.kit ? 14 : 24) * (n.s || 1);
+    var n = ns[i], es = npcScale(n), w = 16 * es, h = (n.kit ? 14 : 24) * es;
     if (mx >= n.x - w && mx <= n.x + w && my >= n.y - h && my <= n.y + 4) return n;
   }
   return null;
@@ -137,6 +139,21 @@ function playerScale(y){
   var s = SCENES[G.scene];
   var t = (y - s.horizon) / (200 - s.horizon);
   return 0.55 + 0.6 * Math.max(0, Math.min(1, t));
+}
+// cats share Scarlett's depth perspective (bigger up close, smaller far away);
+// 0.85 is the mid-floor reference so each cat's authored size holds there
+function npcScale(n){
+  if (G.mode === 'ceremony') return n.s || 1;
+  return (n.s || 1) * playerScale(n.y) / 0.85;
+}
+// SkyClan's floor narrows between the gorge walls — keep feet off the cliffs
+function floorClamp(scene, x, y){
+  if (scene === 'skycamp'){
+    var lx = Math.max(8, 96 - (y - 140) * 1.1) + 6;
+    var rx = Math.min(312, 226 + (y - 138) * 1.06) - 6;
+    x = Math.max(lx, Math.min(rx, x));
+  }
+  return [x, y];
 }
 
 // ---- edge travel: walk off-screen into the neighboring territory ------------
@@ -558,6 +575,8 @@ function update(){
       else if (exSide === 'right'){ G.x = 2; G.y = Math.max(sc2.horizon + 6, Math.min(192, keepY)); G.dir = 'right'; G.walkTo(32, G.y); }
       else if (exSide === 'top'){ G.x = Math.max(12, Math.min(308, keepX)); G.y = 198; G.dir = 'up'; G.walkTo(G.x, 182); }
       else { G.x = Math.max(12, Math.min(308, keepX)); G.y = sc2.horizon + 4; G.dir = 'down'; G.walkTo(G.x, sc2.horizon + 20); }
+      var efc = floorClamp(tgtScene, G.x, G.y);
+      G.x = efc[0]; G.y = efc[1];
       DLG.toast(sc2.name);
     }
   }
@@ -642,12 +661,12 @@ function draw(){
       drawSnake(ctx, ac.snake.x, ac.snake.y, tick, 1, ac.snake.flip);
     } else if (ac.deco){
       rseed(ac.y);
-      drawKit(ctx, ac.deco.x, ac.deco.y, CATS[ac.deco.spec], 0.55);
+      drawKit(ctx, ac.deco.x, ac.deco.y, CATS[ac.deco.spec], npcScale({ s: 0.55, y: ac.deco.y }));
     } else {
       var np = ac.npc;
       rseed(np.x * 7 + 3);
-      if (np.kit) drawKit(ctx, np.x, np.y, CATS[np.id], np.s || 0.65);
-      else drawCat(ctx, np.x, np.y, CATS[np.id], tick / 20 + np.x, np.s || 1, np.flip);
+      if (np.kit) drawKit(ctx, np.x, np.y, CATS[np.id], npcScale({ s: np.s || 0.65, y: np.y }));
+      else drawCat(ctx, np.x, np.y, CATS[np.id], tick / 20 + np.x, npcScale(np), np.flip);
     }
   }
 

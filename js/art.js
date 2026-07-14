@@ -439,7 +439,7 @@ ART.painters.windcamp = function(g){
 
 // ---- SHADOWCLAN CAMP -------------------------------------------------------
 ART.painters.shadowcamp = function(g){
-  bands(g, 0, 0, VW, 92, ['#171226', '#221a36', PAL.shadow2, PAL.shadow3]);
+  bands(g, 0, 0, VW, 102, ['#171226', '#221a36', PAL.shadow2, PAL.shadow3]);
   for (var i = 0; i < 20; i++) star(g, rndi(0, VW), rndi(0, 40), '#8a92b8');
   // black pines
   for (var p = 0; p < 6; p++) pine(g, 12 + p * 22, 104, 66, '#0e1418', '#182228');
@@ -474,9 +474,9 @@ ART.painters.shadowcamp = function(g){
 };
 
 // ---- SKYCLAN CAMP (the gorge) ----------------------------------------------
-ART.painters.skycamp = function(g){
-  daySky(g, 70);
-  // warm sandstone gorge walls
+// the sandstone walls are painted by this helper so the background AND the
+// occluder layer (which Scarlett can pass behind) stay identical
+function skyGorgeWalls(g){
   poly(g, [[0,200],[0,70],[92,70],[112,100],[96,140],[60,170],[30,200]], '#c28a52');
   poly(g, [[0,140],[0,70],[80,70],[96,96],[76,120],[36,134]], '#d8a468');
   dither(g, 0, 70, 110, 110, '#a87042', 0.25);
@@ -501,6 +501,18 @@ ART.painters.skycamp = function(g){
     var vx = v < 4 ? 20 + v * 18 : 240 + (v - 4) * 18;
     g.beginPath(); g.moveTo(vx, 70); g.lineTo(vx + rndi(-3, 3), 70 + rndi(16, 34)); g.stroke();
   }
+}
+
+ART.painters.skycamp = function(g){
+  daySky(g, 70);
+  // the valley seen through the gorge mouth (this used to be a transparent
+  // hole that smeared old frames — every pixel gets paint now)
+  bands(g, 0, 70, VW, 52, [PAL.skyLow, PAL.skyHaze, '#d8e6d8']);
+  treeline(g, 122, 22, PAL.leaf2, PAL.leaf3);
+  frect(g, 0, 122, VW, 18, PAL.leaf3);
+  dither(g, 0, 122, VW, 18, PAL.leaf2, 0.3);
+  frect(g, 0, 136, VW, 64, PAL.sand3);                       // solid floor base, no gaps
+  skyGorgeWalls(g);
   // gorge floor, sunlit
   bands(g, 96, 140, 130, 60, [PAL.sand2, PAL.sand3, PAL.sand4]);
   bands(g, 30, 170, 262, 30, [PAL.sand2, PAL.sand3]);
@@ -617,7 +629,8 @@ var OCC = {
     ],
     skycamp: [
       { baseY: 133, paint: function(g){ rock(g, 160, 132, 44, 26, '#b47a48', '#cf9a5e', '#e8bc7e'); } },
-      { baseY: 172, paint: function(g){ blob(g, 110, 168, 18, 8, '#8a9a4e', 5); } }
+      { baseY: 172, paint: function(g){ blob(g, 110, 168, 18, 8, '#8a9a4e', 5); } },
+      { baseY: 250, paint: function(g){ skyGorgeWalls(g); } }   // walls always in front — no standing ON the cliffs
     ]
   }
 };
