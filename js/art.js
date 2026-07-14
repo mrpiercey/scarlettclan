@@ -86,20 +86,112 @@ function homePerson(g, x, y, opt){
   if (opt.freckles){ px(g, x - 2, hy + headH * 0.68, '#c08a5a'); px(g, x + 2, hy + headH * 0.68, '#c08a5a'); }
 }
 
-// ---- TITLE ---------------------------------------------------------------
+// ---- TITLE (KQ6-style: carved stone, thorn border, crest medallion) --------
+// metallic beveled text on a shallow upward arch
+function archText(g, text, cx, baseY, font, amp){
+  g.font = font; g.textBaseline = 'alphabetic';
+  var cw = g.measureText('M').width;
+  var total = cw * text.length;
+  for (var i = 0; i < text.length; i++){
+    var ch = text[i];
+    var t = (i + 0.5) / text.length - 0.5;              // -0.5 .. 0.5
+    var x = cx - total / 2 + i * cw;
+    var y = baseY - amp * (1 - 4 * t * t);              // bows upward in the middle
+    g.fillStyle = '#1e0e06'; g.fillText(ch, x + 2, y + 2);   // drop shadow
+    g.fillStyle = '#6a2e10'; g.fillText(ch, x + 1, y + 1);   // dark bevel
+    g.fillStyle = '#c87a2e'; g.fillText(ch, x, y);           // copper body
+    g.fillStyle = '#f6d08a'; g.fillText(ch, x - 0.5, y - 1); // gold highlight
+  }
+}
+
 ART.painters.title = function(g){
-  bands(g, 0, 0, VW, 120, [PAL.duskTop, '#5a3a72', PAL.duskMid, '#b46a6a', PAL.duskLow, PAL.duskHaze]);
-  ell(g, 160, 118, 34, 34, '#f6d88a'); ell(g, 160, 118, 26, 26, '#fce8b4');   // setting sun
-  for (var i = 0; i < 26; i++) star(g, rndi(0, VW), rndi(0, 55), '#f0e2c8');
-  // silhouetted forest + hills
-  poly(g, [[0,130],[0,108],[60,96],[130,110],[200,98],[270,108],[320,100],[320,130]], '#2c1e3e');
-  treeline(g, 116, 26, '#221636', '#301f4a');
-  bands(g, 0, 126, VW, 74, ['#3a2a52', '#33244a', '#2a1c3e', '#221632']);
-  path(g, 160, 200, 160, 132, 60, 8, '#4a3860', '#5a4670');
-  // two cat silhouettes watching the sunset
-  drawCat(g, 130, 178, {fur:'#191026', belly:'#191026', eye:PAL.gold}, 2, 1.15, false);
-  drawCat(g, 196, 176, {fur:'#191026', belly:'#191026', eye:PAL.glow}, 5, 1.0, true);
-  for (var f = 0; f < 12; f++) px(g, rndi(20, 300), rndi(120, 190), PAL.gold2); // fireflies
+  // mottled blue-gray stone wall
+  bands(g, 0, 0, VW, VH, ['#5a6480', '#6a7490', '#5f6a86', '#525c78', '#5a6480']);
+  dither(g, 0, 0, VW, VH, '#49536e', 0.30);
+  dither(g, 0, 0, VW, VH, '#7a86a4', 0.12);
+  // cracks in the stone
+  g.strokeStyle = '#3e4660'; g.lineWidth = 1;
+  for (var cr = 0; cr < 7; cr++){
+    var cx0 = rndi(20, 300), cy0 = rndi(10, 190);
+    g.beginPath(); g.moveTo(cx0, cy0);
+    for (var seg = 0; seg < 4; seg++){ cx0 += rndi(-10, 10); cy0 += rndi(4, 12); g.lineTo(cx0, cy0); }
+    g.stroke();
+  }
+  // ---- carved crest medallion ----
+  ell(g, 160, 108, 46, 44, '#454f6a');                       // recess shadow
+  ell(g, 160, 106, 43, 41, '#8a94ae');                       // raised rim
+  ell(g, 160, 107, 38, 36, '#6c7692');                       // face
+  dither(g, 124, 74, 72, 66, '#5a6480', 0.25);
+  // carved great "S" monogram
+  g.font = 'bold 44px monospace'; g.textBaseline = 'alphabetic';
+  g.fillStyle = '#3c4660'; g.fillText('S', 148, 126);        // carved shadow
+  g.fillStyle = '#a4b0c8'; g.fillText('S', 146, 124);        // lit edge
+  g.fillStyle = '#59647f'; g.fillText('S', 147, 125);        // stone face
+  // a golden collar hung over the top of the medallion
+  g.strokeStyle = '#8a6614'; g.lineWidth = 3;
+  g.beginPath(); g.arc(160, 78, 9, Math.PI * 0.95, Math.PI * 2.05); g.stroke();
+  g.strokeStyle = PAL.gold2; g.lineWidth = 1.5;
+  g.beginPath(); g.arc(160, 77.5, 9, Math.PI * 1.0, Math.PI * 2.0); g.stroke();
+  poly(g, [[157, 85], [163, 85], [160, 91]], PAL.gold);      // tag
+  px(g, 160, 87, PAL.red);
+  // two stone cats carved into the wall, flanking the medallion
+  rseed(7);
+  drawCat(g, 96, 148, {fur:'#78829e', belly:'#8b95b0', eye:'#4a5470'}, 2, 1.25, false);
+  rseed(7);
+  drawCat(g, 224, 148, {fur:'#78829e', belly:'#8b95b0', eye:'#4a5470'}, 2, 1.25, true);
+  // ---- thorny branches with blossoms creeping over every edge ----
+  // each border gets thick gnarled vines that hug it, with thorns, leaf
+  // clusters and blossoms placed ON the vine, KQ6-style
+  function vine(x0, y0, dx, dy, wob){
+    var pts = [[x0, y0]];
+    var vx = x0, vy = y0;
+    for (var sg = 0; sg < 14; sg++){
+      vx += dx + rndi(-3, 3); vy += dy + rndi(-3, 3);
+      vy += dx ? rndi(-wob, wob) : 0; vx += dy ? rndi(-wob, wob) : 0;
+      pts.push([vx, vy]);
+    }
+    // dark under-stroke then lighter bark stroke
+    for (var pass = 0; pass < 2; pass++){
+      g.strokeStyle = pass ? '#4a3018' : '#241408';
+      g.lineWidth = pass ? 2 : 3.5;
+      g.beginPath(); g.moveTo(pts[0][0], pts[0][1]);
+      for (var p = 1; p < pts.length; p++) g.lineTo(pts[p][0], pts[p][1]);
+      g.stroke();
+    }
+    for (var p2 = 1; p2 < pts.length - 1; p2++){
+      var px0 = pts[p2][0], py0 = pts[p2][1];
+      if (p2 % 2 === 0){                                     // thorn
+        var tdx = dy === 0 ? 0 : rndi(-3, 3), tdy = dx === 0 ? 0 : rndi(-3, 3);
+        poly(g, [[px0 - 1.5, py0], [px0 + tdx + (dy ? (px0 < 160 ? 4 : -4) : 0), py0 + tdy + (dx ? (py0 < 100 ? 4 : -4) : 0)], [px0 + 1.5, py0]], '#241408');
+      }
+      if (p2 % 3 === 0){                                     // leaf cluster
+        ell(g, px0 + rndi(-2, 2), py0 + rndi(-2, 2), 3, 2, '#3a5a2c');
+        ell(g, px0 + rndi(-3, 3), py0 + rndi(-2, 2), 2.2, 1.5, '#4c7038');
+      }
+      if (p2 % 4 === 1){                                     // blossom on the vine
+        flower(g, px0 + rndi(-2, 2), py0 + rndi(-2, 2), p2 % 8 === 1 ? '#e8b8c8' : '#f0ece2', PAL.gold2);
+        px(g, px0 + rndi(-3, 3), py0 + rndi(-3, 3), '#fff');
+      }
+    }
+  }
+  vine(-6, 4, 24, 0, 5);    vine(-10, 12, 24, 0, 4);         // top
+  vine(-6, 194, 24, 0, 4);  vine(-10, 187, 24, 0, 5);        // bottom
+  vine(5, -6, 0, 16, 4);    vine(12, -10, 0, 16, 5);         // left
+  vine(315, -6, 0, 16, 4);  vine(308, -10, 0, 16, 5);        // right
+  // ---- the arched metallic title ----
+  archText(g, "SCARLETT'S", 160, 30, 'bold 13px monospace', 5);
+  archText(g, 'WARRIOR CATS QUEST', 160, 54, 'bold 16px monospace', 8);
+  // ---- wooden banner: THE 15 COLLARS ----
+  poly(g, [[80, 160], [74, 169], [80, 178]], '#4a2c16');     // notched ends
+  poly(g, [[240, 160], [246, 169], [240, 178]], '#4a2c16');
+  frect(g, 80, 158, 160, 22, '#2c1a0c');
+  frect(g, 82, 160, 156, 18, '#6a3e1e');
+  frect(g, 82, 160, 156, 2, '#8a562e');
+  frect(g, 82, 176, 156, 2, '#3e2410');
+  px(g, 86, 168, '#c8a24a'); px(g, 233, 168, '#c8a24a');     // nails
+  g.font = 'bold 10px monospace'; g.textBaseline = 'top';
+  g.fillStyle = '#2a1408'; g.fillText('THE 15 COLLARS', 119, 164);
+  g.fillStyle = PAL.gold2;  g.fillText('THE 15 COLLARS', 118, 163);
 };
 
 // ---- BUS 15 (intro & the wake-up: riding home from Henry Clay) --------------
@@ -180,57 +272,60 @@ ART.painters.bus = function(g){
   frect(g, 0, 170, VW, 2, '#2e2a24');
 };
 
-// ---- FOURTREES -------------------------------------------------------------
+// ---- FOURTREES (oaks + Great Rock are occluders — see OCC below) ------------
 ART.painters.fourtrees = function(g){
   daySky(g, 108);
   treeline(g, 108, 30, PAL.leaf1, PAL.leaf2);
   grassGround(g, 108, PAL.grass2, PAL.grass3, PAL.grass4);
-  // the four great oaks
-  tree(g, 34, 148, 110, PAL.leaf1, PAL.leaf2, PAL.leaf3, PAL.trunk2);
-  tree(g, 292, 146, 116, PAL.leaf1, PAL.leaf2, PAL.leaf3, PAL.trunk2);
-  tree(g, 92, 122, 72, PAL.leaf2, PAL.leaf3, PAL.leaf4, PAL.trunk3);
-  tree(g, 238, 120, 70, PAL.leaf2, PAL.leaf3, PAL.leaf4, PAL.trunk3);
-  // the Great Rock
-  rock(g, 160, 132, 64, 30, PAL.rock2, PAL.rock3, PAL.rock4);
   // mossy patch at the oak roots
   blob(g, 60, 182, 14, 6, PAL.leaf3, 6); blob(g, 56, 180, 8, 4, PAL.leaf5, 4);
   path(g, 160, 200, 160, 138, 54, 12, PAL.dirt3, PAL.dirt4);
   for (var f = 0; f < 10; f++) flower(g, rndi(10, 310), rndi(150, 195), f % 2 ? '#e8e2f0' : PAL.gold2);
 };
 
-// ---- THUNDERCLAN CAMP ------------------------------------------------------
+// ---- THUNDERCLAN CAMP (oak, Highrock & dens are occluders) ------------------
 ART.painters.thundercamp = function(g){
   daySky(g, 100);
   treeline(g, 100, 34, PAL.leaf1, PAL.leaf2);
-  // the old oak, towering over the camp's left side
-  tree(g, 56, 150, 124, PAL.leaf1, PAL.leaf2, PAL.leaf3, PAL.trunk2);
-  px(g, 60, 46, PAL.gold2); px(g, 62, 44, '#fff'); px(g, 58, 48, PAL.gold2);   // the glittering treasure, far too high
   // gorse camp wall
   blob(g, 300, 118, 30, 18, PAL.dark3, 8);
   blob(g, 250, 110, 26, 14, PAL.leaf2, 6);
   // sandy clearing
   bands(g, 0, 112, VW, 88, [PAL.sand1, PAL.sand2, PAL.sand3, PAL.sand2]);
   dither(g, 0, 112, VW, 88, PAL.dirt3, 0.12);
-  // Highledge rock + leader's den
-  rock(g, 282, 138, 70, 42, PAL.rock2, PAL.rock3, PAL.rock4);
-  ell(g, 296, 128, 10, 8, '#20202a');
-  // warriors' den (bramble dome) + nursery
-  blob(g, 46, 150, 26, 14, PAL.trunk2, 8); blob(g, 44, 144, 18, 9, PAL.trunk3, 6);
-  ell(g, 46, 152, 8, 6, '#241a10');
-  blob(g, 120, 132, 20, 11, PAL.leaf2, 7); ell(g, 120, 136, 6, 5, '#1c2a14');
-  // fresh-kill pile + the thieving mouse hole
-  ell(g, 190, 172, 14, 6, PAL.dirt2);
-  ell(g, 185, 168, 5, 3, '#8a6a4a'); ell(g, 194, 169, 5, 3, '#9a8a6a'); ell(g, 190, 165, 4, 3, '#7a5a3a');
-  ell(g, 236, 178, 5, 4, '#241a10');                        // mouse hole
-  // storm-fallen branch below Highrock
-  g.strokeStyle = PAL.trunk3; g.lineWidth = 2;
-  g.beginPath(); g.moveTo(254, 186); g.lineTo(292, 179); g.stroke();
-  px(g, 270, 182, PAL.trunk1);
-  // mossy bank by the warriors' den
-  blob(g, 24, 186, 14, 5, PAL.leaf3, 6); blob(g, 20, 184, 8, 3, PAL.leaf5, 4);
-  // marigold patch by the nursery
-  for (var i = 0; i < 9; i++) flower(g, 116 + rndi(0, 34), 186 + rndi(0, 8), '#e8912a', PAL.gold2);
-  blob(g, 132, 190, 16, 5, PAL.grass3, 5);
+  // fresh-kill pile: an actual heap of prey
+  ell(g, 191, 173, 16, 7, PAL.dirt2);
+  ell(g, 185, 169, 6, 3.5, '#8a6a4a');                       // mouse body
+  ell(g, 181, 167, 2, 1.5, '#8a6a4a');                       // mouse head
+  g.strokeStyle = '#6a4a30'; g.lineWidth = 1;
+  g.beginPath(); g.moveTo(191, 170); g.quadraticCurveTo(196, 172, 197, 168); g.stroke();  // mouse tail
+  ell(g, 196, 170, 6, 3.5, '#5a5a66');                       // starling body
+  poly(g, [[193, 168], [200, 167], [197, 171]], '#3e3e48');  // folded wing
+  px(g, 201, 168, '#e8b83a');                                // beak
+  ell(g, 189, 164, 4.5, 2.5, '#9a8a6a');                     // vole on top
+  ell(g, 236, 178, 5, 4, '#241a10');                         // the thieving mouse's hole
+  dither(g, 231, 174, 11, 8, PAL.dirt2, 0.3);
+  // storm-fallen branch below Highrock: a real bough with twigs
+  g.strokeStyle = PAL.trunk1; g.lineWidth = 4;
+  g.beginPath(); g.moveTo(253, 187); g.lineTo(293, 179); g.stroke();
+  g.strokeStyle = PAL.trunk3; g.lineWidth = 2.5;
+  g.beginPath(); g.moveTo(253, 187); g.lineTo(293, 179); g.stroke();
+  g.strokeStyle = PAL.trunk3; g.lineWidth = 1.5;
+  g.beginPath(); g.moveTo(268, 184); g.lineTo(276, 190); g.moveTo(281, 182); g.lineTo(287, 176); g.stroke();  // twigs
+  px(g, 262, 185, PAL.trunk4); px(g, 274, 182, PAL.trunk4);  // bark highlights
+  // mossy bank by the warriors' den: layered green mound
+  blob(g, 26, 188, 17, 6, PAL.leaf2, 6);
+  blob(g, 24, 185, 12, 4, PAL.leaf3, 5);
+  blob(g, 22, 183, 7, 3, PAL.leaf5, 4);
+  px(g, 18, 186, PAL.leaf5); px(g, 32, 184, PAL.leaf5);
+  // marigold patch by the nursery: flowers on real stems
+  blob(g, 132, 192, 20, 5, PAL.grass3, 6);
+  for (var i = 0; i < 7; i++){
+    var mx = 116 + i * 5 + rndi(0, 2), my = 190 + rndi(0, 5);
+    frect(g, mx, my - 4, 1, 5, PAL.grass2);
+    ell(g, mx + 0.5, my - 5, 2, 2, '#e8912a');
+    px(g, mx, my - 5, PAL.gold2);
+  }
   path(g, 160, 200, 160, 120, 60, 14, PAL.sand2, PAL.sand3);
   for (var t = 0; t < 6; t++) tuft(g, rndi(10, 310), rndi(120, 195), PAL.grass2);
 };
@@ -247,26 +342,38 @@ ART.painters.rivercamp = function(g){
     var wy = 104 + rnd() * 92;
     frect(g, 224 + rnd() * (VW - 228) * ((wy - 100) / 100 * 0.4 + 0.6), wy, rndi(3, 8), 1, i % 3 ? PAL.water4 : PAL.water5);
   }
-  // reed banks
-  g.strokeStyle = PAL.leaf3; g.lineWidth = 1;
+  // reed banks — some with brown cattail heads
   for (var r = 0; r < 22; r++){
     var rx = 216 + rnd() * 30, ry = 108 + rnd() * 84;
-    g.beginPath(); g.moveTo(rx, ry); g.lineTo(rx - 2 + rnd() * 4, ry - rndi(8, 16)); g.stroke();
+    var rtx = rx - 2 + rnd() * 4, rty = ry - rndi(9, 17);
+    g.strokeStyle = PAL.leaf3; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(rx, ry); g.lineTo(rtx, rty); g.stroke();
+    if (r % 4 === 0){ frect(g, rtx - 1, rty - 4, 2.5, 5, '#6a4a2a'); px(g, rtx, rty - 5, '#8a6a42'); }
   }
-  // swan feathers on the upstream bank
-  ell(g, 178, 128, 2, 4, PAL.cream); ell(g, 188, 132, 2, 4, '#f4f4f8'); ell(g, 172, 133, 2, 4, PAL.cream);
-  // woven reed dens
-  blob(g, 60, 138, 24, 13, '#8a9a4e', 7); ell(g, 60, 142, 7, 5, '#3a4220');
-  blob(g, 130, 128, 20, 11, '#9aa85e', 6); ell(g, 130, 132, 6, 4, '#3a4220');
+  // swan feathers on the upstream bank: big soft plumes with quills
+  var fpos = [[176, 126], [187, 131], [170, 132]];
+  for (var fe = 0; fe < 3; fe++){
+    var fx = fpos[fe][0], fy = fpos[fe][1];
+    ell(g, fx + 1, fy + 3, 2.5, 1, 'rgba(30,50,30,0.3)');    // ground shadow
+    ell(g, fx, fy, 2.5, 5, fe === 1 ? '#f4f4f8' : PAL.cream);
+    ell(g, fx - 0.5, fy - 1, 1.2, 3, '#ffffff');
+    g.strokeStyle = '#b8b8a8'; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(fx, fy - 5); g.lineTo(fx, fy + 5); g.stroke();   // quill
+  }
   dither(g, 40, 128, 44, 14, PAL.sand2, 0.2); dither(g, 112, 120, 38, 12, PAL.sand2, 0.2);
   // smooth stepping stones — with a dark sparkling gap between two of them
-  ell(g, 96, 178, 10, 4, PAL.rock3); ell(g, 112, 184, 8, 3.5, PAL.rock4); ell(g, 84, 186, 7, 3, PAL.rock3);
-  frect(g, 102, 179, 5, 4, '#1a2030');
-  px(g, 104, 180, PAL.water5);
-  // driftwood branch washed up on the bank
-  g.strokeStyle = PAL.sand3; g.lineWidth = 2;
-  g.beginPath(); g.moveTo(148, 190); g.lineTo(184, 184); g.quadraticCurveTo(190, 182, 188, 178); g.stroke();
-  px(g, 166, 187, PAL.sand1);
+  ell(g, 96, 178, 11, 4.5, PAL.rock3); ell(g, 96, 177, 9, 3.5, PAL.rock4);
+  ell(g, 114, 184, 9, 4, PAL.rock4); ell(g, 114, 183, 7, 3, PAL.rock5);
+  ell(g, 83, 187, 8, 3.5, PAL.rock3); ell(g, 83, 186, 6, 2.5, PAL.rock4);
+  frect(g, 103, 179, 6, 5, '#141a28');                       // the dark gap
+  px(g, 105, 181, PAL.water5); px(g, 107, 180, '#fff');      // ...something sparkles
+  // driftwood branch washed up on the bank: pale, smooth, hooked
+  g.strokeStyle = '#8a7a5a'; g.lineWidth = 4; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(148, 190); g.lineTo(178, 185); g.quadraticCurveTo(188, 183, 187, 175); g.stroke();
+  g.strokeStyle = '#dcccA4'.toLowerCase(); g.lineWidth = 2;
+  g.beginPath(); g.moveTo(148, 190); g.lineTo(178, 185); g.quadraticCurveTo(187, 183, 186, 176); g.stroke();
+  px(g, 158, 188, '#b4a47c'); px(g, 168, 186, '#b4a47c');    // wood grain
+  px(g, 152, 189, '#f0e4c0');
   path(g, 150, 200, 150, 112, 44, 10, PAL.dirt3, PAL.sand2);
 };
 
@@ -284,25 +391,33 @@ ART.painters.windcamp = function(g){
     px(g, hx, hy, i % 2 ? '#b47ae0' : '#9a5ad0');
   }
   blob(g, 40, 136, 26, 8, '#7a5a9a', 7); blob(g, 262, 140, 30, 9, '#7a5a9a', 8);
-  // camp dip with gorse
+  // camp dip
   ell(g, 160, 158, 66, 22, PAL.moor1);
   ell(g, 160, 158, 54, 17, PAL.moor2);
-  blob(g, 110, 142, 18, 9, PAL.dark3, 6);
-  // Barkface's herb store: a gorse nook stacked with herb bundles
-  blob(g, 202, 144, 20, 10, PAL.dark3, 7);
-  ell(g, 202, 148, 7, 5, '#2a2014');
-  frect(g, 194, 150, 5, 3, PAL.leaf4); frect(g, 202, 151, 5, 3, '#c8d84a'); frect(g, 209, 150, 4, 3, PAL.leaf3);
-  // rabbit warren holes
-  ell(g, 288, 178, 7, 5, '#2a2014'); ell(g, 302, 186, 6, 4, '#2a2014');
-  dither(g, 278, 172, 36, 20, PAL.dirt3, 0.25);
-  // sweet clover patch
-  for (var c = 0; c < 12; c++){
-    var cx2 = 102 + rndi(0, 38), cy2 = 184 + rndi(0, 8);
-    px(g, cx2, cy2, '#f0f0e2'); px(g, cx2 - 1, cy2 + 1, PAL.grass4); px(g, cx2 + 1, cy2 + 1, PAL.grass4);
+  // rabbit warren: a dug mound with twin burrows and kicked-out earth
+  ell(g, 293, 182, 24, 11, PAL.dirt3);
+  ell(g, 291, 179, 18, 7, PAL.dirt4);
+  ell(g, 287, 178, 7, 5.5, '#2a2014'); ell(g, 287, 176.5, 6, 3.5, '#150f08');
+  ell(g, 303, 187, 6, 4.5, '#2a2014');
+  dither(g, 272, 176, 44, 18, PAL.dirt2, 0.3);
+  px(g, 276, 188, PAL.dirt4); px(g, 271, 191, PAL.dirt4); px(g, 280, 193, PAL.dirt4);  // kicked dirt
+  g.strokeStyle = PAL.dirt2; g.lineWidth = 1;
+  g.beginPath(); g.moveTo(281, 183); g.lineTo(274, 189); g.moveTo(285, 185); g.lineTo(280, 192); g.stroke();  // claw scrapes
+  // sweet clover patch: white puffball blossoms on leafy stems
+  blob(g, 120, 190, 22, 5, PAL.moor2, 6);
+  for (var c = 0; c < 7; c++){
+    var cx2 = 102 + c * 6 + rndi(0, 2), cy2 = 187 + rndi(0, 6);
+    frect(g, cx2, cy2 - 3, 1, 4, PAL.grass3);
+    ell(g, cx2 + 0.5, cy2 - 4, 1.8, 1.8, '#f0f0e2');
+    px(g, cx2, cy2 - 5, '#ffffff');
+    px(g, cx2 - 2, cy2, PAL.grass4); px(g, cx2 + 2, cy2 - 1, PAL.grass4);   // trefoil leaves
   }
-  // mossy boulder
-  ell(g, 42, 190, 12, 6, PAL.rock3);
-  blob(g, 40, 186, 9, 4, PAL.leaf3, 5); blob(g, 44, 185, 5, 3, PAL.leaf5, 4);
+  // mossy boulder: a proper rock wearing a moss cap
+  ell(g, 43, 191, 14, 7, PAL.rock2);
+  ell(g, 42, 189, 12, 5.5, PAL.rock3);
+  px(g, 37, 187, PAL.rock4); px(g, 47, 188, PAL.rock4);
+  blob(g, 41, 184, 10, 4, PAL.leaf3, 5); blob(g, 44, 183, 6, 3, PAL.leaf5, 4);
+  px(g, 34, 186, PAL.leaf4); px(g, 50, 185, PAL.leaf4);      // moss creeping down
   path(g, 160, 200, 160, 118, 44, 10, PAL.dirt4, PAL.moor3);
 };
 
@@ -317,22 +432,18 @@ ART.painters.shadowcamp = function(g){
   // marshy dark ground
   bands(g, 0, 100, VW, 100, [PAL.marsh1, PAL.marsh2, PAL.marsh2, PAL.marsh1]);
   dither(g, 0, 100, VW, 100, PAL.shadow2, 0.18);
-  // frog pond at the camp's edge, with lily pads
-  ell(g, 66, 176, 34, 10, '#24382c'); ell(g, 66, 176, 26, 7, '#2c4838');
-  for (var l = 0; l < 5; l++) ell(g, 46 + l * 10, 172 + (l % 2) * 6, 4, 1.5, PAL.marsh4);
-  // bramble dens
-  blob(g, 60, 136, 26, 13, '#241c14', 8); ell(g, 60, 140, 7, 5, '#0c0a08');
-  blob(g, 116, 128, 22, 11, '#241c14', 7); ell(g, 116, 132, 6, 4, '#0c0a08');
-  // the old fox den: black tunnel under twisted roots
-  blob(g, 170, 126, 22, 10, '#2a2218', 6);
-  ell(g, 170, 132, 9, 6, '#060504');
-  g.strokeStyle = '#3a2c1c'; g.lineWidth = 1.5;
-  g.beginPath(); g.moveTo(158, 122); g.quadraticCurveTo(170, 116, 184, 123); g.stroke();
-  // Snakerocks looming on the right
-  rock(g, 278, 162, 66, 42, '#5a4a3a', '#7a6a52', '#9a8a6a');
-  rock(g, 244, 170, 30, 18, '#4a3e30', '#6a5a46');
-  ell(g, 272, 154, 6, 4, '#181410');                        // snake crevice
-  px(g, 284, 148, PAL.glow); px(g, 287, 150, '#d2ffc2');    // glow-moss shimmer deep inside
+  // frog pond at the camp's edge: lily pads and a fat frog sunning itself
+  ell(g, 66, 176, 36, 11, '#1c2c22');
+  ell(g, 66, 176, 30, 9, '#24382c'); ell(g, 64, 175, 24, 6.5, '#2c4838');
+  for (var l = 0; l < 5; l++){
+    var lpx = 46 + l * 10, lpy = 172 + (l % 2) * 6;
+    ell(g, lpx, lpy, 5, 2, PAL.marsh4);
+    poly(g, [[lpx, lpy], [lpx + 5, lpy - 1.5], [lpx + 5, lpy + 1.5]], '#24382c');   // pad notch
+  }
+  ell(g, 56, 169, 4, 2.5, '#4a6a3a');                        // the frog
+  ell(g, 53, 167.5, 1.6, 1.6, '#4a6a3a');
+  px(g, 52, 166, PAL.gold); px(g, 54, 166, PAL.gold);        // bulgy eyes
+  px(g, 58, 168, '#6a8a52');                                 // back sheen
   // glowing mushrooms + eyes in the dark
   px(g, 30, 150, PAL.glow); px(g, 32, 152, PAL.glow); frect(g, 29, 152, 4, 2, '#5a7a4a');
   px(g, 216, 108, PAL.gold); px(g, 220, 108, PAL.gold);     // watching eyes
@@ -352,10 +463,15 @@ ART.painters.skycamp = function(g){
   // cave dens in the walls
   ell(g, 46, 112, 10, 7, '#4a2e1a'); ell(g, 74, 134, 8, 6, '#4a2e1a');
   ell(g, 270, 98, 10, 7, '#4a2e1a'); ell(g, 246, 128, 8, 6, '#4a2e1a');
-  // the wild beehive in a crack of the left wall
-  ell(g, 36, 90, 8, 10, '#c8952a'); frect(g, 32, 84, 8, 2, '#8a6a2a');
-  frect(g, 34, 88, 4, 1, '#8a6a2a'); frect(g, 34, 93, 4, 1, '#8a6a2a');
-  px(g, 28, 96, '#2a2a10'); px(g, 44, 88, '#2a2a10'); px(g, 38, 102, '#2a2a10'); // bees
+  // the wild beehive: banded, dripping honey, patrolled by bees
+  frect(g, 30, 82, 13, 3, '#6a4a1e');                        // crack ledge it hangs from
+  ell(g, 36, 92, 9, 11, '#a87a1e');
+  ell(g, 36, 90, 8.5, 9, '#c8952a');
+  frect(g, 28, 87, 16, 2, '#a87a1e'); frect(g, 29, 92, 15, 2, '#a87a1e'); frect(g, 31, 97, 11, 2, '#a87a1e');  // bands
+  ell(g, 36, 95, 2.5, 2, '#3a2a10');                         // entrance
+  px(g, 36, 103, PAL.gold2); px(g, 36, 106, PAL.gold2); px(g, 37, 109, PAL.gold);   // honey dripping
+  px(g, 26, 96, '#2a2a10'); px(g, 46, 87, '#2a2a10'); px(g, 40, 103, '#2a2a10'); px(g, 30, 78, '#2a2a10'); // bees
+  px(g, 27, 96, PAL.gold2); px(g, 47, 87, PAL.gold2);        // bee stripes
   // trailing ivy + rope vine
   g.strokeStyle = PAL.leaf3; g.lineWidth = 1;
   for (var v = 0; v < 8; v++){
@@ -367,24 +483,132 @@ ART.painters.skycamp = function(g){
   bands(g, 30, 170, 262, 30, [PAL.sand2, PAL.sand3]);
   frect(g, 60, 140, 200, 60, PAL.sand3);
   dither(g, 60, 140, 200, 60, PAL.sand1, 0.15);
-  // the rockpile ledge + half-built dens
-  rock(g, 160, 132, 44, 26, '#b47a48', '#cf9a5e', '#e8bc7e');
-  blob(g, 110, 168, 18, 8, '#8a9a4e', 5);                  // finished den
-  // half-built den: loose sticks
+  // half-built den: loose sticks (the Rockpile & finished den are occluders)
   g.strokeStyle = PAL.trunk3;
   g.beginPath(); g.moveTo(200, 174); g.lineTo(216, 162); g.moveTo(206, 176); g.lineTo(220, 168); g.moveTo(198, 170); g.lineTo(212, 158); g.stroke();
-  // the cold spring + soaked moss (bottom right)
-  ell(g, 262, 188, 16, 6, PAL.water3); ell(g, 262, 188, 11, 4, PAL.water4);
-  ell(g, 236, 184, 8, 4, PAL.rock3);
-  blob(g, 234, 181, 7, 3, PAL.leaf2, 4); px(g, 230, 186, PAL.water4); px(g, 240, 187, PAL.water4);
-  // the patch of turned earth, below the cliff caves
-  dither(g, 142, 186, 26, 8, '#a87042', 0.5);
-  dither(g, 146, 188, 18, 5, '#8a5a34', 0.4);
+  // the cold spring: clear blue pool bubbling from the rock, moss soaked beside it
+  ell(g, 263, 189, 18, 7, '#1a3a5e');
+  ell(g, 262, 188, 15, 5.5, PAL.water3); ell(g, 261, 187, 10, 3.5, PAL.water4);
+  px(g, 258, 186, '#fff'); px(g, 266, 188, PAL.water5); px(g, 262, 185, '#fff');  // sparkling water
+  ell(g, 237, 185, 9, 4.5, PAL.rock3);
+  blob(g, 235, 181, 8, 3.5, PAL.leaf2, 5); blob(g, 233, 180, 4, 2, PAL.leaf4, 3);
+  px(g, 229, 186, PAL.water4); px(g, 241, 187, PAL.water4); px(g, 236, 189, PAL.water5);  // drips
+  // the patch of turned earth, below the cliff caves: a scratched-up mound
+  ell(g, 154, 190, 13, 4.5, '#9a6238');
+  ell(g, 152, 188.5, 9, 3, '#a87042');
+  dither(g, 142, 185, 26, 9, '#8a5a34', 0.35);
+  g.strokeStyle = '#6a4226'; g.lineWidth = 1;
+  g.beginPath(); g.moveTo(148, 187); g.lineTo(154, 191); g.moveTo(152, 186); g.lineTo(158, 190); g.moveTo(156, 186); g.lineTo(162, 189); g.stroke();  // claw scratches
+  px(g, 146, 192, '#c28a52'); px(g, 163, 191, '#c28a52');    // scattered sand
   // sunbeam
   g.globalAlpha = 0.16;
   poly(g, [[150,0],[210,0],[260,200],[120,200]], '#fff6d8');
   g.globalAlpha = 1;
   for (var f = 0; f < 6; f++) flower(g, rndi(80, 240), rndi(160, 195), PAL.gold2);
+};
+
+// ============================================================
+// OCCLUDERS — mid-ground objects (trees, rocks, dens) painted
+// into their own transparent layers so actors y-sort against
+// them: stand below one and you're in front, above and you're
+// behind. Cached like ART backgrounds.
+// ============================================================
+var OCC = {
+  cache: {},
+  get: function(scene){
+    var defs = this.defs[scene];
+    if (!defs) return [];
+    if (!this.cache[scene]){
+      var out = [];
+      for (var i = 0; i < defs.length; i++){
+        var o = offscreen();
+        rseed(scene.length * 131 + i * 17 + 5);
+        defs[i].paint(o.g);
+        out.push({ canvas: o.canvas, y: defs[i].baseY });
+      }
+      this.cache[scene] = out;
+    }
+    return this.cache[scene];
+  },
+  defs: {
+    fourtrees: [
+      { baseY: 148, paint: function(g){ tree(g, 34, 148, 110, PAL.leaf1, PAL.leaf2, PAL.leaf3, PAL.trunk2); } },
+      { baseY: 146, paint: function(g){ tree(g, 292, 146, 116, PAL.leaf1, PAL.leaf2, PAL.leaf3, PAL.trunk2); } },
+      { baseY: 122, paint: function(g){ tree(g, 92, 122, 72, PAL.leaf2, PAL.leaf3, PAL.leaf4, PAL.trunk3); } },
+      { baseY: 120, paint: function(g){ tree(g, 238, 120, 70, PAL.leaf2, PAL.leaf3, PAL.leaf4, PAL.trunk3); } },
+      { baseY: 132, paint: function(g){ rock(g, 160, 132, 64, 30, PAL.rock2, PAL.rock3, PAL.rock4); } }
+    ],
+    thundercamp: [
+      { baseY: 150, paint: function(g){
+          tree(g, 56, 150, 124, PAL.leaf1, PAL.leaf2, PAL.leaf3, PAL.trunk2);
+          px(g, 60, 46, PAL.gold2); px(g, 62, 44, '#fff'); px(g, 58, 48, PAL.gold2);  // the treasure glitters
+        } },
+      { baseY: 139, paint: function(g){
+          rock(g, 282, 138, 70, 42, PAL.rock2, PAL.rock3, PAL.rock4);
+          ell(g, 296, 128, 10, 8, '#20202a');
+        } },
+      { baseY: 157, paint: function(g){
+          blob(g, 46, 150, 26, 14, PAL.trunk2, 8); blob(g, 44, 144, 18, 9, PAL.trunk3, 6);
+          ell(g, 46, 152, 8, 6, '#241a10');
+        } },
+      { baseY: 138, paint: function(g){
+          blob(g, 120, 132, 20, 11, PAL.leaf2, 7); ell(g, 120, 136, 6, 5, '#1c2a14');
+        } }
+    ],
+    rivercamp: [
+      { baseY: 146, paint: function(g){ blob(g, 60, 138, 24, 13, '#8a9a4e', 7); ell(g, 60, 142, 7, 5, '#3a4220'); } },
+      { baseY: 135, paint: function(g){ blob(g, 130, 128, 20, 11, '#9aa85e', 6); ell(g, 130, 132, 6, 4, '#3a4220'); } }
+    ],
+    windcamp: [
+      { baseY: 147, paint: function(g){ blob(g, 110, 142, 18, 9, PAL.dark3, 6); } },
+      { baseY: 153, paint: function(g){
+          // Barkface's herb store: gorse nook, drying bundles, the folded bile leaf out front
+          blob(g, 202, 144, 20, 10, PAL.dark3, 7);
+          ell(g, 202, 148, 7, 5, '#2a2014');
+          g.strokeStyle = '#5a4a2e'; g.lineWidth = 1;
+          g.beginPath(); g.moveTo(193, 141); g.lineTo(193, 146); g.moveTo(211, 140); g.lineTo(211, 145); g.stroke();  // hanging stems
+          frect(g, 191, 146, 5, 4, PAL.leaf4); frect(g, 209, 145, 5, 4, PAL.leaf3);   // drying bundles
+          frect(g, 199, 151, 6, 4, '#c8d84a'); px(g, 201, 152, '#e8e8b0');            // the bile leaf, folded
+        } }
+    ],
+    shadowcamp: [
+      { baseY: 143, paint: function(g){ blob(g, 60, 136, 26, 13, '#241c14', 8); ell(g, 60, 140, 7, 5, '#0c0a08'); } },
+      { baseY: 134, paint: function(g){ blob(g, 116, 128, 22, 11, '#241c14', 7); ell(g, 116, 132, 6, 4, '#0c0a08'); } },
+      { baseY: 138, paint: function(g){
+          // the old fox den: gnarled root arch over a pitch-black tunnel
+          blob(g, 170, 126, 24, 10, '#2a2218', 6);
+          ell(g, 170, 132, 10, 6.5, '#060504');
+          g.strokeStyle = '#3a2c1c'; g.lineWidth = 2;
+          g.beginPath(); g.moveTo(157, 130); g.quadraticCurveTo(162, 118, 172, 120); g.stroke();
+          g.beginPath(); g.moveTo(184, 131); g.quadraticCurveTo(182, 120, 172, 120); g.stroke();
+          g.lineWidth = 1;
+          g.beginPath(); g.moveTo(160, 126); g.lineTo(155, 133); g.moveTo(181, 124); g.lineTo(187, 129); g.stroke();
+          px(g, 162, 136, '#d8d0c0'); px(g, 165, 137, '#c8c0b0');   // old bones by the entrance
+        } },
+      { baseY: 181, paint: function(g){
+          rock(g, 278, 162, 66, 42, '#5a4a3a', '#7a6a52', '#9a8a6a');
+          rock(g, 244, 170, 30, 18, '#4a3e30', '#6a5a46');
+          ell(g, 272, 154, 6, 4, '#181410');                        // snake crevice
+          px(g, 284, 148, PAL.glow); px(g, 287, 150, '#d2ffc2');    // glow-moss shimmer
+        } }
+    ],
+    skycamp: [
+      { baseY: 133, paint: function(g){ rock(g, 160, 132, 44, 26, '#b47a48', '#cf9a5e', '#e8bc7e'); } },
+      { baseY: 172, paint: function(g){ blob(g, 110, 168, 18, 8, '#8a9a4e', 5); } }
+    ]
+  }
+};
+
+// solid footprints — you can't stand ON a trunk, rock, or den; walk targets
+// inside these get nudged just below them (game.js walkTo)
+var SOLIDS = {
+  fourtrees:  [ {x:28,y:130,w:13,h:20}, {x:285,y:128,w:14,h:20}, {x:86,y:110,w:12,h:14},
+                {x:232,y:108,w:12,h:14}, {x:128,y:110,w:64,h:24} ],
+  thundercamp:[ {x:49,y:130,w:14,h:22}, {x:247,y:106,w:70,h:34}, {x:22,y:138,w:46,h:20}, {x:102,y:124,w:36,h:15} ],
+  rivercamp:  [ {x:38,y:126,w:44,h:21}, {x:112,y:118,w:36,h:18} ],
+  windcamp:   [ {x:94,y:134,w:32,h:14}, {x:184,y:136,w:36,h:18} ],
+  shadowcamp: [ {x:36,y:124,w:48,h:20}, {x:96,y:118,w:40,h:17}, {x:150,y:116,w:40,h:23}, {x:236,y:142,w:84,h:40} ],
+  skycamp:    [ {x:138,y:110,w:44,h:24}, {x:92,y:160,w:36,h:13} ]
 };
 
 // ---- TRAVEL MAP -------------------------------------------------------------
@@ -456,6 +680,8 @@ ART.painters.home = function(g){
   // late-afternoon sky
   bands(g, 0, 0, VW, 118, ['#4a6ecb', '#7aa3e3', '#aecdec', '#e2d8b8', '#f0dfa8']);
   cloud(g, 50, 20, 24, '#f4f8fc'); cloud(g, 250, 30, 30, '#eef4f8');
+  // ground base first (no transparent gaps between sky and lawn)
+  bands(g, 0, 116, VW, 60, [PAL.grass3, PAL.grass3, PAL.grass2, PAL.grass3]);
   // neighborhood behind
   treeline(g, 118, 22, PAL.leaf2, PAL.leaf3);
   house(g, 12, 118, 34, 26, '#c8b49a', '#8a5a4a', '#a89478');

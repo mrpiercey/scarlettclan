@@ -114,6 +114,15 @@ var SND = {
     this.voice(1046.5, t, 0.09, 'bell', 0.5);        // C6
     this.voice(1568.0, t + 0.09, 0.22, 'bell', 0.5); // G6
   },
+  dingFile: function(){                   // Scarlett's own reward sound (dingsound.mp3)
+    if (this.muted) return;
+    try {
+      if (!this._dingA){ this._dingA = new Audio('dingsound.mp3'); this._dingA.volume = 0.6; }
+      this._dingA.currentTime = 0;
+      var p = this._dingA.play();
+      if (p && p.catch) p.catch(function(){});
+    } catch(e){ this.ding(); }            // fall back to the synth blip
+  },
   fanfare: function(){                    // collar earned: rising arpeggio + ding
     if (!this.ready) return;
     var t = this.ctx.currentTime;

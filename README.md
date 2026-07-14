@@ -1,4 +1,4 @@
-# Scarlett's Quest: The Fifteen Collars 🐾
+# Scarlett's Warrior Cats Quest — The 15 Collars 🐾
 
 A point-and-click adventure in the style of **King's Quest VI**, set in the world of
 the warrior cats — made for Scarlett's 15th birthday.
@@ -28,7 +28,8 @@ Chrome, Safari, Firefox, and Edge all work. Click once on the title screen to st
 | **TAB** (or I) | Open your backpack |
 | **Right-click** | Also cycles actions: Walk → Look → Talk → Use |
 | **Mouse to top of screen** | Icon bar (all actions + backpack, map, music) |
-| **M** | Open the travel map |
+| **Click a screen edge** | Walk off-screen into the neighboring territory |
+| **M** | Open the travel map (fast travel) |
 | **S** | Music on/off |
 | **Space / Enter** | Advance dialogue |
 

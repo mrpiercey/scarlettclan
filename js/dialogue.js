@@ -49,16 +49,26 @@ var DLG = {
     return true;
   },
 
-  _layoutChoices: function(){
-    var out = [], y = 150 + this._wrap(this.fullText()).length * 9 + 4;
-    for (var i = 0; i < this.step.choices.length; i++){
-      out.push({ x: 86, y: y + i * 11, w: 218, h: 10 });
+  // one source of truth for the box geometry — the frame grows to fit the
+  // text and any choices, so nothing ever spills outside it
+  _layout: function(){
+    var s = this.step;
+    var portrait = !!(s.who && s.who !== 'narrator');
+    var lines = this._wrap(s.text, portrait ? 45 : 58);
+    var textH = lines.length * 9;
+    var choicesH = s.choices ? s.choices.length * 11 + 3 : 0;
+    var h = Math.max(portrait ? 66 : 34, textH + choicesH + 21);
+    var top = 196 - h;
+    var rects = [];
+    if (s.choices){
+      var cy = top + 10 + textH + 4;
+      for (var i = 0; i < s.choices.length; i++) rects.push({ x: 86, y: cy + i * 11, w: 218, h: 10 });
     }
-    return out;
+    return { top: top, h: h, portrait: portrait, lines: lines, textX: portrait ? 84 : 16, rects: rects };
   },
 
   _choiceAt: function(mx, my){
-    var rects = this._layoutChoices();
+    var rects = this._layout().rects;
     for (var i = 0; i < rects.length; i++){
       var r = rects[i];
       if (mx >= r.x && mx <= r.x + r.w && my >= r.y && my <= r.y + r.h) return i;
@@ -70,11 +80,12 @@ var DLG = {
     if (this.active && this.step && this.step.choices) this.hoverChoice = this._choiceAt(mx, my);
   },
 
-  _wrap: function(text){
+  _wrap: function(text, width){
+    width = width || 45;
     var words = text.split(' '), lines = [], line = '';
     for (var i = 0; i < words.length; i++){
       var test = line ? line + ' ' + words[i] : words[i];
-      if (test.length > 45){ lines.push(line); line = words[i]; }
+      if (test.length > width){ lines.push(line); line = words[i]; }
       else line = test;
     }
     if (line) lines.push(line);
@@ -123,45 +134,40 @@ var DLG = {
     }
     if (!this.active || !this.step) return;
     var s = this.step;
-    this.ornateFrame(g, 6, 130, 308, 66);
+    var L = this._layout();
+    this.ornateFrame(g, 6, L.top, 308, L.h);
     g.font = '8px monospace'; g.textBaseline = 'top';
 
-    var textX = 84;
-    if (s.who && s.who !== 'narrator'){
+    if (L.portrait){
       // portrait frame
-      frect(g, 12, 136, 62, 54, '#2a1e14');
-      frect(g, 13, 137, 60, 52, PAL.gold);
-      g.save(); g.beginPath(); g.rect(15, 139, 56, 48); g.clip();
-      if (s.who === 'scarlett') drawPortraitScarlett(g, 15, 135);
-      else if (window.CATS && CATS[s.who]) drawPortraitCat(g, 15, 135, CATS[s.who]);
-      else if (window.FAMILY && FAMILY[s.who]) drawPortraitHuman(g, 15, 135, FAMILY[s.who]);
+      frect(g, 12, L.top + 6, 62, 54, '#2a1e14');
+      frect(g, 13, L.top + 7, 60, 52, PAL.gold);
+      g.save(); g.beginPath(); g.rect(15, L.top + 9, 56, 48); g.clip();
+      if (s.who === 'scarlett') drawPortraitScarlett(g, 15, L.top + 5);
+      else if (window.CATS && CATS[s.who]) drawPortraitCat(g, 15, L.top + 5, CATS[s.who]);
+      else if (window.FAMILY && FAMILY[s.who]) drawPortraitHuman(g, 15, L.top + 5, FAMILY[s.who]);
       g.restore();
       // name plate
-      frect(g, 15, 180, 56, 9, 'rgba(20,12,8,0.85)');
+      frect(g, 15, L.top + 50, 56, 9, 'rgba(20,12,8,0.85)');
       g.fillStyle = PAL.gold2;
       var nm = s.name || (window.CATS && CATS[s.who] ? CATS[s.who].name
                 : (window.FAMILY && FAMILY[s.who] ? FAMILY[s.who].name : 'Scarlett'));
-      g.fillText(nm, 43 - nm.length * 2.4, 181);
-    } else {
-      textX = 16;
+      g.fillText(nm, 43 - nm.length * 2.4, L.top + 51);
     }
 
     // typewriter text
     g.fillStyle = '#2a1e14';
-    var shown = this.fullText().substring(0, this.chars);
-    var lines = this._wrap(this.fullText());
     var count = 0;
-    for (var i = 0; i < lines.length; i++){
-      var take = Math.max(0, Math.min(lines[i].length, this.chars - count));
-      g.fillText(lines[i].substring(0, take), textX, 140 + i * 9);
-      count += lines[i].length + 1;
+    for (var i = 0; i < L.lines.length; i++){
+      var take = Math.max(0, Math.min(L.lines[i].length, this.chars - count));
+      g.fillText(L.lines[i].substring(0, take), L.textX, L.top + 10 + i * 9);
+      count += L.lines[i].length + 1;
     }
 
     // choices
     if (s.choices && this.chars >= this.fullText().length){
-      var rects = this._layoutChoices();
       for (var c = 0; c < s.choices.length; c++){
-        var r = rects[c];
+        var r = L.rects[c];
         if (c === this.hoverChoice){
           frect(g, r.x - 2, r.y - 1, r.w + 4, r.h, '#d8c890');
         }
@@ -172,7 +178,7 @@ var DLG = {
       // blinking advance arrow
       if ((tick / 20 | 0) % 2 === 0){
         g.fillStyle = '#7a1e1e';
-        g.fillText('▼', 298, 184);
+        g.fillText('▼', 298, L.top + L.h - 12);
       }
     }
   }

@@ -84,45 +84,138 @@ function drawScarlett(g, x, y, dir, frame, s){
   g.restore();
 }
 
-// ---- Cats ---------------------------------------------------------------
+// ---- Cats (bitmap pixel sprites) -----------------------------------------
 // spec: {fur, belly, patch, eye, stripes, starry}
+function shade(hex, f){
+  var n = parseInt(hex.slice(1), 16);
+  return 'rgb(' + Math.round(((n >> 16) & 255) * f) + ',' + Math.round(((n >> 8) & 255) * f) + ',' + Math.round((n & 255) * f) + ')';
+}
+
+// sitting cat, 16x20, feet baseline at (x, y). head left, haunch right.
+// O outline, F fur, B belly/chest, I inner ear, E eye, N nose
+var CAT_BODY = [
+  '.OO....OO.......',
+  '.OIO..OIO.......',
+  '.OFFOOFFO.......',
+  'OFFFFFFFFO......',
+  'OFFFFFFFFO......',
+  'OFEFFFEFFO......',
+  'OFFFFFFFFO......',
+  'OFFFNFFFFO......',
+  '.OFFFFFFO.......',
+  '..OBBFFFOO......',
+  '.OBBBBFFFFOO....',
+  '.OBBBBFFFFFFO...',
+  'OBBBBBFFFFFFFO..',
+  'OBBBBFFFFFFFFO..',
+  'OBBBFFFFFFFFFO..',
+  'OFBBFFFFFFFFFOO.',
+  'OFFBFFFFFFFFFFO.',
+  'OFFBFFFFFFFFFFO.',
+  'OFFFOFFFOFFFFFO.',
+  '.OOO.OOO..OOOO..'
+];
+var CAT_PATCH = [[2,6],[2,7],[3,6],[3,7],[3,8],[4,7],[4,8],                // over one ear/eye
+  [13,10],[13,11],[13,12],[14,10],[14,11],[14,12],[15,10],[15,11],[15,12],
+  [16,10],[16,11],[16,12],[17,10],[17,11],[17,12]];                        // haunch
+var CAT_STRIPE = [[3,3],[3,6],[10,8],[11,10],[12,9],[13,11],[15,12],[16,7],[17,9]];
+
 function drawCat(g, x, y, spec, frame, s, flip){
   g.save();
   g.translate(x | 0, y | 0);
   g.scale(s || 1, s || 1);
   if (flip) g.scale(-1, 1);
+  var out = shade(spec.fur, 0.45);
   var tailWag = Math.sin(frame * 0.7) * 2;
-  // tail
+  // tail (behind the body), tip flicking
+  g.lineCap = 'round';
+  g.strokeStyle = out; g.lineWidth = 3.5;
+  g.beginPath(); g.moveTo(5, -4); g.quadraticCurveTo(11, -5, 10 + tailWag, -14); g.stroke();
   g.strokeStyle = spec.fur; g.lineWidth = 2;
-  g.beginPath(); g.moveTo(7, -4); g.quadraticCurveTo(13, -6, 12 + tailWag, -13); g.stroke();
-  // body (sitting)
-  ell(g, 0, -6, 8, 6.5, spec.fur);
-  if (spec.patch) { ell(g, -3, -7, 4, 3.5, spec.patch); ell(g, 4, -4, 3, 3, spec.patch); }
-  if (spec.stripes){ g.fillStyle = spec.stripes; g.fillRect(-5, -10, 2, 3); g.fillRect(-1, -11, 2, 3); g.fillRect(3, -9, 2, 3); }
-  ell(g, -3, -3, 4, 3.5, spec.belly || spec.fur);
-  // front legs
-  frect(g, -6, -5, 2.5, 6, spec.fur); frect(g, -2, -5, 2.5, 6, spec.fur);
-  // head
-  ell(g, -4, -14, 5, 4.5, spec.fur);
-  if (spec.patch) ell(g, -6, -15, 2.5, 2, spec.patch);
-  poly(g, [[-8, -16], [-6, -21], [-4.5, -16]], spec.fur);   // ears
-  poly(g, [[-3, -16], [-1.5, -21], [0.5, -16]], spec.fur);
-  poly(g, [[-6.7, -17], [-6, -19.5], [-5.3, -17]], '#d8909a');
-  // eyes + nose
-  px(g, -6, -15, spec.eye); px(g, -2, -15, spec.eye);
-  px(g, -4, -13, '#d87a8a');
-  if (spec.starry){ for (var i = 0; i < 8; i++) px(g, -8 + rndi(0, 14), -20 + rndi(0, 16), '#eef4ff'); }
+  g.beginPath(); g.moveTo(5, -4); g.quadraticCurveTo(11, -5, 10 + tailWag, -14); g.stroke();
+  px(g, 9.5 + tailWag, -15, spec.belly || spec.fur);
+  // body bitmap
+  var cols = { O: out, F: spec.fur, B: spec.belly || spec.fur, I: '#d8909a', E: spec.eye, N: '#d87a8a' };
+  for (var r = 0; r < CAT_BODY.length; r++){
+    var row = CAT_BODY[r];
+    for (var c = 0; c < row.length; c++){
+      if (row[c] !== '.') px(g, c - 8, r - 20, cols[row[c]]);
+    }
+  }
+  // markings recolor fur cells only
+  var m, i;
+  if (spec.patch){
+    for (i = 0; i < CAT_PATCH.length; i++){
+      m = CAT_PATCH[i];
+      if (CAT_BODY[m[0]][m[1]] === 'F' || CAT_BODY[m[0]][m[1]] === 'B') px(g, m[1] - 8, m[0] - 20, spec.patch);
+    }
+  }
+  if (spec.stripes){
+    for (i = 0; i < CAT_STRIPE.length; i++){
+      m = CAT_STRIPE[i];
+      if (CAT_BODY[m[0]][m[1]] === 'F') px(g, m[1] - 8, m[0] - 20, spec.stripes);
+    }
+  }
+  if (spec.starry){ for (i = 0; i < 8; i++) px(g, -8 + rndi(0, 15), -20 + rndi(0, 15), '#eef4ff'); }
   g.restore();
 }
 
-// small sleeping/curled kit
+// small kit, 10x9 bitmap
+var KIT_BODY = [
+  '.OO..OO...',
+  '.OIOOIO...',
+  'OFFFFFFO..',
+  'OFEFFEFO..',
+  'OFFNFFFOO.',
+  '.OFFFFFFFO',
+  'OFFFFFFFFO',
+  'OFFFFFFFFO',
+  '.OO.OO.OO.'
+];
 function drawKit(g, x, y, spec, s){
   g.save(); g.translate(x, y); g.scale(s || 0.6, s || 0.6);
-  ell(g, 0, -4, 7, 5, spec.fur);
-  ell(g, -4, -6, 4, 3.5, spec.fur);
-  poly(g, [[-7, -8], [-5.5, -12], [-4, -8]], spec.fur);
-  poly(g, [[-4, -8], [-2.5, -12], [-1, -8]], spec.fur);
-  px(g, -5, -7, spec.eye); px(g, -2, -7, spec.eye);
+  var out = shade(spec.fur, 0.45);
+  var cols = { O: out, F: spec.fur, B: spec.belly || spec.fur, I: '#d8909a', E: spec.eye, N: '#d87a8a' };
+  px(g, 5, -4, spec.fur); px(g, 6, -5, spec.fur);            // tail nub
+  for (var r = 0; r < KIT_BODY.length; r++){
+    var row = KIT_BODY[r];
+    for (var c = 0; c < row.length; c++){
+      if (row[c] !== '.') px(g, c - 5, r - 9, cols[row[c]]);
+    }
+  }
+  g.restore();
+}
+
+// ---- Snake (for Snakerocks — gone once the snake-charm herb is used) ------
+function drawSnake(g, x, y, tick, s, flip){
+  g.save(); g.translate(x, y); g.scale(s || 1, s || 1);
+  if (flip) g.scale(-1, 1);
+  var BODY = '#6a8a3e', DARK = '#2a3a16', DIAMOND = '#a4c060';
+  // tapered S-curved body, head at the left
+  var i, t, bx, by, r;
+  for (i = 0; i <= 10; i++){
+    t = i / 10; bx = i * 2.2; by = Math.sin(i * 0.85 + 0.4) * 2.6 * (1 - t * 0.3);
+    r = 2.2 - 1.5 * t;
+    ell(g, bx, by, r + 0.7, r * 0.8 + 0.6, DARK);
+  }
+  for (i = 0; i <= 10; i++){
+    t = i / 10; bx = i * 2.2; by = Math.sin(i * 0.85 + 0.4) * 2.6 * (1 - t * 0.3);
+    r = 2.2 - 1.5 * t;
+    ell(g, bx, by, r, r * 0.8, BODY);
+    if (i % 2 === 0 && i < 9) px(g, bx, by - 1, DIAMOND);    // diamond back markings
+  }
+  // wedge head + eye
+  ell(g, -2.6, 0.6, 3, 2.1, DARK);
+  ell(g, -2.6, 0.6, 2.3, 1.5, BODY);
+  px(g, -3.6, -0.2, '#e8c83a');
+  // flicking forked tongue
+  if (((tick / 14) | 0) % 2 === 0){
+    g.strokeStyle = '#c83a3a'; g.lineWidth = 0.8;
+    g.beginPath();
+    g.moveTo(-5, 0.6); g.lineTo(-6.6, 0.1);
+    g.moveTo(-5, 0.6); g.lineTo(-6.4, 1.4);
+    g.stroke();
+  }
   g.restore();
 }
 

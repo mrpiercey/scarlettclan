@@ -1,32 +1,16 @@
 html, body {
   margin: 0;
   padding: 0;
-  background: #1a1626;
+  background: #0a0a0f;
   height: 100%;
   overflow: hidden;
   font-family: "Courier New", monospace;
 }
 
-#frame {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  border: 3px solid #8a7a5a;
-  box-shadow: 0 0 40px rgba(0,0,0,0.8), inset 0 0 0 1px #2b2438;
-  background: #000;
-}
-
-#titlebar {
-  background: linear-gradient(#d8d0c0, #a89878);
-  color: #2a2018;
-  font-weight: bold;
-  text-align: center;
-  font-size: 14px;
-  padding: 3px 0;
-  border-bottom: 2px solid #5a4a34;
-  letter-spacing: 1px;
-  user-select: none;
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #game {

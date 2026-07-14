@@ -146,7 +146,8 @@ var QUESTS = {
       DLG.say([
         N('You crouch... wait... and POUNCE like a warrior!'),
         ME('Gotcha! Ribbit all you want, you\'re coming with me.'),
-        N('You caught a fat frog! It looks deeply offended.')
+        N('You caught a fat frog! It looks deeply offended.'),
+        ME('All this hunting is making me hungry. What I would GIVE for a bag of Takis right now. The frog does not count. Sorry, frog.')
       ]);
       return true;
     }
@@ -156,7 +157,10 @@ var QUESTS = {
       } else if (!f.took_bileleaf){
         f.took_bileleaf = true;
         addItem('bileleaf');
-        DLG.say([N('You take the folded mouse-bile leaf Barkface set out. You hold it VERY far from your nose.')]);
+        DLG.say([
+          N('You take the folded mouse-bile leaf Barkface set out. You hold it VERY far from your nose.'),
+          ME('This store has EVERYTHING. It\'s like Wilson\'s Grocery in here... if Wilson\'s had a bile aisle, Mom might finally stop spending half her paycheck there.')
+        ]);
       } else DLG.say([N('One bile leaf is plenty. More than plenty.')]);
       return true;
     }
@@ -293,6 +297,7 @@ var QUESTS = {
         N('You roll the moss-ball across the grass. Gorsepaw stalks... drops low... waits... and POUNCES — a perfect, silent kill-strike!'),
         CAT('gorsepaw', 'THAT\'S what I\'ve been doing wrong — I was rushing the pounce! Watch this!'),
         N('Gorsepaw streaks off across the moor... and comes trotting back with his very first rabbit, tail higher than a flag.'),
+        ME('You could say his hunting career really... took off with a POUNCE. ...I\'ll see myself out.'),
         CAT('tallstar', 'His first catch, and the whole clan saw it. You trained an apprentice the way a mentor dreams of, Scarlett. WindClan runs fast and remembers long — this is yours.')
       ], function(){ gainCollar('WindClan'); });
       return true;
@@ -362,7 +367,7 @@ var QUESTS = {
       removeItem('honey'); f.q14 = true;
       DLG.say([
         CAT('sharpclaw', 'HONEY? From the gorge hive? The one that chased Petalnose into the pool?'),
-        ME('The bees and I reached an understanding. The understanding was cold moss.'),
+        ME('The bees and I reached an understanding. The understanding was cold moss. Swarm out today, isn\'t it? ...Sorry. That one\'s my dad\'s. He\'d be so proud right now.'),
         CAT('sharpclaw', 'Ha! With this, the whole clan works till moonhigh — honey for every builder! You just rebuilt half a camp, twoleg. This collar was dug out of our cliff. It\'s yours.')
       ], function(){ gainCollar('SkyClan'); });
       return true;
@@ -403,6 +408,7 @@ var QUESTS = {
     if (id === 'lionheart'){
       if (!f.map){
         f.map = true;
+        SND.dingFile();
         DLG.say([
           N('The starlit golden cat rises and bows, stars dripping from his fur like dew.'),
           CAT('lionheart', 'Peace, Scarlett of Henry Clay. You are safe. You have slept your way between worlds — this is Fourtrees, heart of the forest of the warrior clans.'),
@@ -411,9 +417,11 @@ var QUESTS = {
           CAT('lionheart', 'Long ago, fifteen kittypets left their twoleg homes and became the first great warriors. Their fifteen collars were kept here at Fourtrees — StarClan\'s promise that hearts can change. But a great storm scattered them among the clans\' camps... and tore the path between your world and ours.'),
           CAT('lionheart', 'I need them back, Scarlett. Every one. Only when all fifteen shine at Fourtrees again will the way home open — and place them in my paws, and you will wake on Bus 15 as if you never left it.'),
           ME('Find fifteen collars, hand them to a glowing cat, wake up on the bus. Sure. I survived finals week at Henry Clay. How hard can this be?'),
+          CAT('lionheart', 'That is the spirit. And take heart — why do leopards never escape their troubles? ...Because they are always SPOTTED. Mrrow. StarClan has few entertainments; we take our jokes seriously.'),
+          ME('Oh no. You\'re a dad-joke cat. My dad is going to LOVE that you exist.'),
           CAT('lionheart', 'The map of the territories is in your mind now. Four camps hold three collars each — earn them by helping the clans; everything each clan needs can be found in its own camp. When twelve shine, the last secret of the forest will reveal itself.'),
           CAT('lionheart', 'Begin with ThunderClan, my own clan; Firestar expects you. And return to me whenever you are lost — I will light your way.'),
-          N('(TIP: The numbers switch actions — 1 Walk, 2 Look, 3 Talk, 4 Use, 5 carried item. Right-click also cycles them. TAB opens your backpack, M the map.)')
+          N('(TIP: The numbers switch actions — 1 Walk, 2 Look, 3 Talk, 4 Use, 5 carried item. Right-click also cycles them. TAB opens your backpack, M the map — or simply walk off the edge of the screen into the next territory.)')
         ]);
         return;
       }
@@ -472,7 +480,11 @@ var QUESTS = {
       return;
     }
     if (id === 'snowkit'){
-      DLG.say(f.q2 ? [ CAT('snowkit', 'You got it down! You got it down! When I\'m a warrior I\'m going to tell EVERYONE a giant rescued my treasure!') ]
+      DLG.say(f.q2 ? [
+        CAT('snowkit', 'You got it down! You got it down! When I\'m a warrior I\'m going to tell EVERYONE a giant rescued my treasure!'),
+        CAT('snowkit', 'And then I\'m going to explore ALL the cold places! The coldest! The farthest!'),
+        ME('Buddy, you\'d love Ellesmere Island. Farthest-north land there is — ice, wind, zero owls. Basically your brand.')
+      ]
       : [
         CAT('snowkit', '*sniff* The storm took my treasure! The shiny circle-thing! It\'s stuck at the TOP of the old oak and I\'m not allowed to climb past the first branch!'),
         ME('A shiny circle, huh? I\'ll see what I can do, kiddo.'),
@@ -489,7 +501,10 @@ var QUESTS = {
       return;
     }
     if (id === 'sandstorm'){
-      DLG.say([ CAT('sandstorm', 'Watch the footwork, twoleg. Pounce, twist, land. ...You\'re taking notes? Ha! I like you. The marigolds are by the nursery, if that\'s what you\'re here for.') ]);
+      DLG.say([
+        CAT('sandstorm', 'Watch the footwork, twoleg. Pounce, twist, land. ...You\'re taking notes? Ha! I like you. The marigolds are by the nursery, if that\'s what you\'re here for.'),
+        ME('Pounce, twist, land. Easy. I have cat-like reflexes — my dad says so every time I drop my phone directly onto my face.')
+      ]);
       return;
     }
 
@@ -500,7 +515,9 @@ var QUESTS = {
         CAT('leopardstar', 'A collar from the river, a star-stone for our kits, and Graypool warm at night. RiverClan\'s three are well earned, land-walker.')
       ] : [
         CAT('leopardstar', 'A twoleg who ASKS before crossing the river. Interesting. Yes, Scarlett — we\'ve heard. Three of the fifteen fell into RiverClan\'s keeping when the storm passed.'),
-        CAT('leopardstar', 'One lies lost in the river itself. One belongs to Mosspelt, whose kits want the impossible. And Graypool\'s nest shames us all. Everything you need is on our own banks — RiverClan wants for nothing except paws clever enough to use it.')
+        CAT('leopardstar', 'One lies lost in the river itself. One belongs to Mosspelt, whose kits want the impossible. And Graypool\'s nest shames us all. Everything you need is on our own banks — RiverClan wants for nothing except paws clever enough to use it.'),
+        ME('Got it. Hey — what do you call a fish with no eyes? ...A fsh. My dad tells that one every single time we have fish sticks.'),
+        CAT('leopardstar', '...RiverClan will pretend, for the sake of the alliance, that we did not hear that.')
       ]);
       return;
     }
@@ -529,13 +546,16 @@ var QUESTS = {
       ] : [
         CAT('tallstar', 'The twoleg the wind spoke of! Be welcome, Scarlett. Three of the fifteen came down on our moor when the storm broke, and three troubles keep us.'),
         CAT('tallstar', 'A collar lies in the rabbit warren, guarded by the fattest, smuggest rabbit on the moor. Morningflower is being eaten alive by a tick — speak with her, and with Barkface. And my apprentice Gorsepaw... watch him hunt a while. You\'ll see.'),
-        CAT('tallstar', 'Everything the moor asks of you, the moor provides. Look around our camp.')
+        CAT('tallstar', 'Everything the moor asks of you, the moor provides. Look around our camp.'),
+        ME('A whole territory kept in balance by one pack of hunters... you guys are like the wolves of Yellowstone. When they came back, the whole valley healed — even the rivers changed.'),
+        CAT('tallstar', 'I do not know this Yellow-stone... but rivers that obey wolves? Those sound like sensible, well-run lands. WindClan approves.')
       ]);
       return;
     }
     if (id === 'morningflower'){
       if (!f.q8 && !f.tickAsked){
         f.tickAsked = true;
+        SND.dingFile();
         DLG.say([
           CAT('morningflower', 'Itch, itch, ITCH. There\'s a tick on my shoulder with its own gravitational pull, young one.'),
           CAT('morningflower', 'Barkface keeps mouse-bile leaves in his herb store for exactly this — the only cure there is. Ugh, but it works. He\'s already set one out; my old legs just haven\'t made the trip.')
@@ -573,7 +593,8 @@ var QUESTS = {
       ] : [
         CAT('blackstar', 'So. The twoleg the other clans coo about. ShadowClan does not coo. Three collars fell in OUR marsh, and we give NOTHING for free.'),
         CAT('blackstar', 'Prove yourself to Russetfur — she respects only hunters. Our elders freeze in a lightless den. And... a kit is missing. Smokekit. Three days now.'),
-        CAT('russetfur', 'If it can\'t catch a frog in our own pond, it can\'t be trusted in our camp.')
+        CAT('russetfur', 'If it can\'t catch a frog in our own pond, it can\'t be trusted in our camp.'),
+        ME('Grudges, secrets, moody stares across a border... ShadowClan is basically The Summer I Turned Pretty with more fur. And I\'ve read it twice, so honestly? I\'m prepared.')
       ]);
       return;
     }
@@ -604,6 +625,7 @@ var QUESTS = {
     if (id === 'leafstar'){
       if (!f.skyAsked){
         f.skyAsked = true;
+        SND.dingFile();
         DLG.say([
           CAT('leafstar', 'So the stars sent us a twoleg. Welcome to the gorge, Scarlett — SkyClan knows better than any clan what it means to need a friend.'),
           CAT('leafstar', 'We were the fifth clan, driven out and forgotten. When we returned, our three collars were only two. The elders\' tales say the lost one belonged to Cloudstar\'s kin, and that the ancestors buried it here in the gorge itself — below the cliff caves, where the morning sun first touches the sand.'),
@@ -623,7 +645,14 @@ var QUESTS = {
       return;
     }
     if (id === 'echosong'){
-      if (f.q15){ DLG.say([ CAT('echosong', 'Friend of All Clans. Now carry the fifteen home to Lionheart at Fourtrees — the stars are holding their breath, Scarlett.') ]); return; }
+      if (f.q15){
+        DLG.say([
+          CAT('echosong', 'Friend of All Clans. Now carry the fifteen home to Lionheart at Fourtrees — the stars are holding their breath, Scarlett.'),
+          ME('On it. Also — Echosong? Your voice is very Laufey. Dreamy, a little sad, makes everything feel like autumn. That\'s the highest compliment I know how to give.'),
+          CAT('echosong', 'I do not know this Laufey... but the stars just purred, so I shall accept.')
+        ]);
+        return;
+      }
       if (!(f.q13 && f.q14)){
         DLG.say([ CAT('echosong', 'I hold the final collar, Scarlett — and the Trial of Trust. But the trial comes LAST. Finish your work for Leafstar and Sharpclaw first, then return to me.') ]);
         return;

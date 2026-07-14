@@ -7,10 +7,9 @@ var canvas = document.getElementById('game');
 var ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;
 
-// fit the 640x400 canvas to the window (integer-ish scale, pixelated)
+// fill the browser window: as large as fits, square pixels, dark matte around
 function fitCanvas(){
-  var scale = Math.min((window.innerWidth - 20) / 640, (window.innerHeight - 60) / 400);
-  scale = Math.max(1, Math.floor(scale * 2) / 2);
+  var scale = Math.min(window.innerWidth / 640, window.innerHeight / 400);
   canvas.style.width = (640 * scale) + 'px';
   canvas.style.height = (400 * scale) + 'px';
 }
@@ -32,12 +31,21 @@ var G = {
   collars: 0,
   flags: {},
   endPhase: 0,
+  exiting: null,          // {side, target, t} while walking off-screen
   pendingReveal: false, pendingReturn: false,
   hasSave: false,
   walkTo: function(x, y, cb){
     var sc = SCENES[this.scene];
     this.tx = Math.max(8, Math.min(312, x));
     this.ty = Math.max(sc.horizon + 2, Math.min(196, y));
+    // can't stand on a tree trunk, rock, or den — step down below it instead
+    var solids = (window.SOLIDS && SOLIDS[this.scene]) || [];
+    for (var i = 0; i < solids.length; i++){
+      var sd = solids[i];
+      if (this.tx >= sd.x && this.tx <= sd.x + sd.w && this.ty >= sd.y && this.ty <= sd.y + sd.h){
+        this.ty = Math.min(196, sd.y + sd.h + 2);
+      }
+    }
     this.walking = true;
     this.onArrive = cb || null;
   }
@@ -52,7 +60,7 @@ var titlePulse = 0;
 function hasItem(id){ return G.inventory.indexOf(id) >= 0; }
 function addItem(id){
   if (!hasItem(id)) G.inventory.push(id);
-  SND.ding();
+  SND.dingFile();
   DLG.toast('You got: ' + ITEMS[id].name + '!', id);
   save();
 }
@@ -63,6 +71,7 @@ function removeItem(id){
 }
 function gainCollar(clan){
   G.collars++;
+  SND.dingFile();
   SND.fanfare();
   DLG.toast('★ ' + clan + ' collar earned!  (' + G.collars + ' of 15) ★', 'collar');
   if (G.collars === 12) G.pendingReveal = true;
@@ -127,6 +136,29 @@ function playerScale(y){
   var s = SCENES[G.scene];
   var t = (y - s.horizon) / (200 - s.horizon);
   return 0.55 + 0.6 * Math.max(0, Math.min(1, t));
+}
+
+// ---- edge travel: walk off-screen into the neighboring territory ------------
+function edgeSideAt(mx, my){
+  var sc = SCENES[G.scene];
+  if (mx <= 12) return 'left';
+  if (mx >= 308) return 'right';
+  if (my >= 190) return 'bottom';
+  if (my <= sc.horizon + 4) return 'top';
+  return null;
+}
+function edgeTargetAt(mx, my){
+  var side = edgeSideAt(mx, my);
+  var edges = SCENES[G.scene].edges;
+  return (side && edges && edges[side]) ? { side: side, target: edges[side] } : null;
+}
+function tryEdgeTravel(side, target){
+  if (target === 'skycamp' && G.collars < 12){
+    SND.err();
+    DLG.say([N('A cold wind pushes back from the north. The way to the gorge isn\'t open yet... the clans\' collars must come first.')]);
+    return;
+  }
+  G.exiting = { side: side, target: target, t: 0 };
 }
 
 // ---- icon bar ---------------------------------------------------------------------
@@ -210,6 +242,7 @@ canvas.addEventListener('mousedown', function(e){
   if (!SND.ready){ SND.init(); SND.playSong(SCENES[G.scene].music); }
 
   if (DLG.active){ DLG.click(mx, my); return; }
+  if (G.exiting) return;                       // hands off while she walks off-screen
   if (G.mode === 'map'){ mapClick(mx, my); return; }
   if (G.mode === 'inv'){ invClick(mx, my); return; }
   if (G.mode === 'ending') return;
@@ -240,10 +273,16 @@ canvas.addEventListener('mousedown', function(e){
   }
 
   if (G.verb === 'walk' || (!npc && !hot)){
-    G.walkTo(mx, my, function(){
-      // walked to a screen edge? open the map
-      if (G.flags.map && (G.ty >= 193 || G.tx <= 10 || G.tx >= 310)) G.mode = 'map';
-    });
+    // clicked at a screen edge with a neighboring territory? walk off-screen into it
+    var eg = (G.verb === 'walk' && !npc) ? edgeTargetAt(mx, my) : null;
+    if (eg){
+      var sc3 = SCENES[G.scene];
+      var exx = eg.side === 'left' ? 8 : eg.side === 'right' ? 312 : Math.max(12, Math.min(308, mx));
+      var exy = eg.side === 'top' ? sc3.horizon + 2 : eg.side === 'bottom' ? 196 : Math.max(sc3.horizon + 6, Math.min(192, my));
+      G.walkTo(exx, exy, function(){ tryEdgeTravel(eg.side, eg.target); });
+      return;
+    }
+    G.walkTo(mx, my);
     return;
   }
 
@@ -281,19 +320,19 @@ function makeAction(verb, npc, hot){
 // ---- title ------------------------------------------------------------------------
 function titleClick(mx, my){
   SND.init();
-  if (G.hasSave && my > 150 && my < 170 && mx > 170 && mx < 290){
+  if (G.hasSave && my > 182 && my < 200 && mx > 172 && mx < 262){
     load();
     G.mode = 'play';
     SND.playSong(SCENES[G.scene].music);
     return;
   }
-  if (my > 150 && my < 170 && mx > 30 && mx < 150){
+  if (my > 182 && my < 200 && mx > 58 && mx < 148){
     startIntro();
     return;
   }
   if (!G.hasSave){
     // click anywhere starts new game if no save
-    titleClick(90, 160);
+    startIntro();
   }
 }
 
@@ -306,7 +345,8 @@ function startIntro(){
   SND.playSong('title');
   DLG.say([
     N('3:47 PM. The last bell at Henry Clay High School rang twenty minutes ago, and Bus 15 rumbles down the long road home.'),
-    ME('Fifteen tomorrow... Mom is probably taping up streamers right now. I just wish this bus ride didn\'t take a hundred years.'),
+    ME('Fifteen tomorrow... Taylor Swift wrote a whole song about fifteen, and starting tomorrow it\'s literally MY track. Mom is probably taping up streamers right now.'),
+    ME('I just wish this bus ride didn\'t take a hundred years. Should\'ve put on Laufey. Nothing makes a bus window feel like a music video faster than Laufey.'),
     N('The bus is warm. The seat hums. The trees smear past the window like green water...'),
     { who: null, text: 'Her eyes drift closed. Just for a second. Just... for... a... second...',
       effect: function(){ G.introPhase = 1; SND.stopSong(); } },
@@ -356,12 +396,12 @@ function mapClick(mx, my){
 function invSlots(){
   var out = [];
   for (var i = 0; i < G.inventory.length; i++){
-    out.push({ id: G.inventory[i], x: 56 + (i % 8) * 26, y: 66 + Math.floor(i / 8) * 26 });
+    out.push({ id: G.inventory[i], x: 56 + (i % 8) * 26, y: 58 + Math.floor(i / 8) * 26 });
   }
   return out;
 }
 function invClick(mx, my){
-  if (mx > 238 && mx < 274 && my > 110 && my < 126){ closeInv(); return; }
+  if (mx > 236 && mx < 274 && my > 141 && my < 157){ closeInv(); return; }
   var slots = invSlots();
   for (var i = 0; i < slots.length; i++){
     var s = slots[i];
@@ -429,9 +469,9 @@ function beginWakeUp(){
     ME('I\'m back! The SAME ride home... but I remember all of it. Every camp. Every collar. Every whisker.'),
     { who:null, text:'She grabs her backpack and hops down the bus steps — and there, on the lawn in front of the dark blue house, her whole family is waiting.',
       effect: function(){ G.endPhase = 1; SND.playSong('birthday'); } },
-    { who:'dad', text:'There she is! Happy 15th birthday, kiddo! We heard the bus from the porch and everybody RAN.' },
-    { who:'mom', text:'Happy birthday, sweetheart! Cake\'s on the table, candles are ready — all fifteen of them.' },
-    { who:'hank', text:'Happy birthday, Scarlett! Also I called dibs on the corner piece. Drake Maye rules. Number 10 always gets the corner piece.' },
+    { who:'dad', text:'There she is! Happy 15th birthday, kiddo! Hey — what do you call a pile of kittens? A MEOWNTAIN. I\'ve been saving that one all day. Your mother is very tired.' },
+    { who:'mom', text:'Happy birthday, sweetheart! Grilled cheese and tomato soup tonight, cake after — and yes, we spent WAY too much at Wilson\'s Grocery on party snacks. Again.' },
+    { who:'hank', text:'Happy birthday, Scarlett! I called dibs on the corner piece — Drake Maye rules, number 10 always gets the corner piece. Also I got you Takis. Okay, I got ME Takis. But I\'ll share.' },
     { who:'ramona', text:'HAPPY BIRTHDAY SCARLETT!! I drew you FIFTEEN cats on your card! And one of them is GOLD!' },
     ME('...Fifteen cats. And one of them is gold. *smiles* Best. Birthday. Ever.'),
     N('And somewhere behind her — or maybe somewhere much, much farther away — a golden warrior purrs.')
@@ -461,11 +501,38 @@ function update(){
     ]);
   }
 
+  // walking off-screen into a neighboring territory
+  if (G.exiting && !DLG.active){
+    var ex = G.exiting;
+    ex.t++;
+    var esp = 1.0 * playerScale(G.y);
+    if (ex.side === 'left'){ G.x -= esp; G.dir = 'left'; }
+    else if (ex.side === 'right'){ G.x += esp; G.dir = 'right'; }
+    else if (ex.side === 'top'){ G.y -= esp * 0.6; G.dir = 'up'; }
+    else { G.y += esp; G.dir = 'down'; }
+    if (tick % 9 === 0){
+      G.step = (G.step + 1) % 4;
+      if (G.step === 0 || G.step === 2) SND.step();
+    }
+    if (ex.t > 22){
+      var tgtScene = ex.target, exSide = ex.side, keepX = G.x, keepY = G.y;
+      G.exiting = null;
+      travelTo(tgtScene);
+      var sc2 = SCENES[tgtScene];
+      // enter from the opposite edge, near where she left
+      if (exSide === 'left'){ G.x = 318; G.y = Math.max(sc2.horizon + 6, Math.min(192, keepY)); G.dir = 'left'; G.walkTo(288, G.y); }
+      else if (exSide === 'right'){ G.x = 2; G.y = Math.max(sc2.horizon + 6, Math.min(192, keepY)); G.dir = 'right'; G.walkTo(32, G.y); }
+      else if (exSide === 'top'){ G.x = Math.max(12, Math.min(308, keepX)); G.y = 198; G.dir = 'up'; G.walkTo(G.x, 182); }
+      else { G.x = Math.max(12, Math.min(308, keepX)); G.y = sc2.horizon + 4; G.dir = 'down'; G.walkTo(G.x, sc2.horizon + 20); }
+      DLG.toast(sc2.name);
+    }
+  }
+
   // walking
-  if ((G.mode === 'play') && G.walking && !DLG.active){
+  if ((G.mode === 'play') && G.walking && !G.exiting && !DLG.active){
     var dx = G.tx - G.x, dy = G.ty - G.y;
     var dist = Math.sqrt(dx * dx + dy * dy);
-    var speed = 1.5 * playerScale(G.y);
+    var speed = 0.9 * playerScale(G.y);
     if (dist <= speed){
       G.x = G.tx; G.y = G.ty; G.walking = false; G.step = 0;
       if (G.onArrive){ var cb = G.onArrive; G.onArrive = null; cb(); }
@@ -473,7 +540,7 @@ function update(){
       G.x += dx / dist * speed;
       G.y += dy / dist * speed;
       G.dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
-      if (tick % 6 === 0){
+      if (tick % 9 === 0){
         G.step = (G.step + 1) % 4;
         if (G.step === 0 || G.step === 2) SND.step();   // footfall on the contact frames
       }
@@ -509,28 +576,23 @@ function draw(){
   var artName = (G.mode === 'ceremony') ? 'ending' : sc.art;
   ctx.drawImage(ART.get(artName), 0, 0);
 
-  // sparkles on available pickups
-  if (G.mode === 'play'){
-    var hs = sc.hotspots;
-    for (var i = 0; i < hs.length; i++){
-      var h = hs[i];
-      var sparkle = QUESTS.isPickup(h.id);
-      if (sparkle && (tick / 24 | 0) % 3 !== 2){
-        var sx = h.x + h.w / 2 + Math.sin(tick * 0.1 + i) * 3, sy = h.y + h.h / 2;
-        px(ctx, sx, sy, '#fff'); px(ctx, sx - 2, sy + 1, PAL.gold2); px(ctx, sx + 2, sy - 1, PAL.gold2);
-      }
-    }
-  }
-
-  // draw actors sorted by y (painter's order)
+  // draw actors + occluders sorted by y (painter's order): standing above a
+  // tree/rock/den means being drawn behind it, below means in front
   var actors = [];
   if (G.mode === 'ceremony'){
     for (var c = 0; c < ceremonyCats.length; c++) actors.push({ npc: ceremonyCats[c], y: ceremonyCats[c].y });
   } else {
+    var occs = OCC.get(G.scene);
+    for (var o = 0; o < occs.length; o++) actors.push({ occ: occs[o], y: occs[o].y });
     var ns = visibleNpcs();
     for (var n = 0; n < ns.length; n++) actors.push({ npc: ns[n], y: ns[n].y });
     var deco = sc.deco || [];
     for (var d = 0; d < deco.length; d++) actors.push({ deco: deco[d], y: deco[d].y });
+    // snakes sunning on Snakerocks, until the snake-charm herb clears them out
+    if (G.scene === 'shadowcamp' && !G.flags.snakecharmed){
+      actors.push({ snake: {x:266, y:150, flip:false}, y: 181.5 });
+      actors.push({ snake: {x:288, y:163, flip:true},  y: 181.6 });
+    }
   }
   actors.push({ player: true, y: G.y });
   actors.sort(function(a, b){ return a.y - b.y; });
@@ -538,7 +600,12 @@ function draw(){
   for (var a = 0; a < actors.length; a++){
     var ac = actors[a];
     if (ac.player){
-      drawScarlett(ctx, G.x, G.y, G.dir, G.walking ? 1 + G.step : 0, playerScale(G.y));
+      var moving = G.walking || G.exiting;
+      drawScarlett(ctx, G.x, G.y, G.dir, moving ? 1 + G.step : 0, playerScale(G.y));
+    } else if (ac.occ){
+      ctx.drawImage(ac.occ.canvas, 0, 0);
+    } else if (ac.snake){
+      drawSnake(ctx, ac.snake.x, ac.snake.y, tick, 1, ac.snake.flip);
     } else if (ac.deco){
       rseed(ac.y);
       drawKit(ctx, ac.deco.x, ac.deco.y, CATS[ac.deco.spec], 0.55);
@@ -547,6 +614,18 @@ function draw(){
       rseed(np.x * 7 + 3);
       if (np.kit) drawKit(ctx, np.x, np.y, CATS[np.id], np.s || 0.65);
       else drawCat(ctx, np.x, np.y, CATS[np.id], tick / 20 + np.x, np.s || 1, np.flip);
+    }
+  }
+
+  // sparkles on available pickups — drawn over everything so they always show
+  if (G.mode === 'play'){
+    var hs = sc.hotspots;
+    for (var i = 0; i < hs.length; i++){
+      var h = hs[i];
+      if (QUESTS.isPickup(h.id) && (tick / 24 | 0) % 3 !== 2){
+        var sx = h.x + h.w / 2 + Math.sin(tick * 0.1 + i) * 3, sy = h.y + h.h / 2;
+        px(ctx, sx, sy, '#fff'); px(ctx, sx - 2, sy + 1, PAL.gold2); px(ctx, sx + 2, sy - 1, PAL.gold2);
+      }
     }
   }
 
@@ -576,6 +655,13 @@ function draw(){
   if (G.mode === 'play' && !DLG.active && !barVisible()){
     var hn = npcAt(mouse.x, mouse.y), hh = hn ? null : hotspotAt(mouse.x, mouse.y);
     var label = hn ? CATS[hn.id].name : (hh ? hh.name : null);
+    if (!label && G.verb === 'walk' && !G.exiting){
+      var egl = edgeTargetAt(mouse.x, mouse.y);
+      if (egl && !(egl.target === 'skycamp' && G.collars < 12)){
+        var arrows = { left:'← ', right:'', top:'↑ ', bottom:'↓ ' };
+        label = arrows[egl.side] + 'To ' + SCENES[egl.target].name + (egl.side === 'right' ? ' →' : '');
+      }
+    }
     if (label){
       var lw = label.length * 4.9 + 6;
       var lx = Math.min(314 - lw, mouse.x + 8), ly = Math.min(190, mouse.y + 14);
@@ -634,14 +720,14 @@ function drawBar(){
 }
 
 function drawInv(){
-  DLG.ornateFrame(ctx, 40, 40, 240, 106);
+  DLG.ornateFrame(ctx, 40, 30, 240, 130);
   ctx.fillStyle = '#3a2a18';
   ctx.font = 'bold 8px monospace';
-  ctx.fillText("SCARLETT'S BACKPACK", 114, 46);
+  ctx.fillText("SCARLETT'S BACKPACK", 114, 36);
   ctx.font = '8px monospace';
   if (G.inventory.length === 0){
     ctx.fillStyle = '#7a6a54';
-    ctx.fillText('(empty — go explore!)', 116, 90);
+    ctx.fillText('(empty — go explore!)', 116, 84);
   }
   var slots = invSlots();
   for (var i = 0; i < slots.length; i++){
@@ -653,21 +739,17 @@ function drawInv(){
   ctx.fillStyle = '#5a4632';
   if (G.invSelect){
     ctx.font = 'bold 8px monospace';
-    ctx.fillText(ITEMS[G.invSelect].name, 50, 114);
+    ctx.fillText(ITEMS[G.invSelect].name, 50, 118);
     ctx.font = '8px monospace';
-    var desc = ITEMS[G.invSelect].desc;
-    if (desc.length > 44){
-      var cut = desc.lastIndexOf(' ', 44);
-      ctx.fillText(desc.substring(0, cut), 50, 123);
-      ctx.fillText(desc.substring(cut + 1), 50, 131);
-    } else ctx.fillText(desc, 50, 123);
+    var dlines = DLG._wrap(ITEMS[G.invSelect].desc, 44);
+    for (var dl = 0; dl < dlines.length && dl < 2; dl++) ctx.fillText(dlines[dl], 50, 127 + dl * 8);
     ctx.fillStyle = '#8a6a3a';
-    ctx.fillText('again = USE  •  other item = COMBINE', 50, 139);
+    ctx.fillText('again = USE  •  other item = COMBINE', 50, 145);
   } else {
-    ctx.fillText('Click an item to select it.', 50, 122);
+    ctx.fillText('Click an item to select it.', 50, 126);
   }
-  frect(ctx, 240, 112, 32, 12, '#8a5c3a');
-  ctx.fillStyle = '#f4e8c0'; ctx.fillText('CLOSE', 244, 114);
+  frect(ctx, 238, 143, 34, 12, '#8a5c3a');
+  ctx.fillStyle = '#f4e8c0'; ctx.fillText('CLOSE', 243, 145);
 }
 
 function drawMap(){
@@ -726,32 +808,27 @@ function drawIntro(){
 
 function drawTitle(){
   ctx.drawImage(ART.get('title'), 0, 0);
-  var bob = Math.sin(titlePulse) * 2;
+  // little glints twinkling across the metal lettering
+  rseed((tick / 18 | 0));
+  for (var gl = 0; gl < 3; gl++){
+    var gx = rndi(70, 250), gy = rndi(14, 56);
+    px(ctx, gx, gy, '#fff'); px(ctx, gx + 1, gy, '#f6d08a');
+  }
+  // wooden buttons (centered when NEW GAME stands alone)
   ctx.textBaseline = 'top';
-  ctx.font = 'bold 17px monospace';
-  ctx.fillStyle = '#1a1026';
-  ctx.fillText("SCARLETT'S QUEST", 57, 26 + bob);
-  ctx.fillStyle = PAL.gold2;
-  ctx.fillText("SCARLETT'S QUEST", 55, 24 + bob);
-  ctx.font = 'bold 10px monospace';
-  ctx.fillStyle = '#1a1026'; ctx.fillText('The Fifteen Collars', 105, 50 + bob);
-  ctx.fillStyle = '#f4e8c0'; ctx.fillText('The Fifteen Collars', 104, 49 + bob);
-  ctx.font = '8px monospace';
-  ctx.fillStyle = '#d8c8e8';
-  ctx.fillText('A point-and-click adventure in the world of the warrior cats', 12, 72);
-
-  // buttons
-  frect(ctx, 30, 150, 120, 20, '#3a2a52'); frect(ctx, 31, 151, 118, 18, '#6a4a86');
-  ctx.fillStyle = PAL.gold2; ctx.font = 'bold 9px monospace';
-  ctx.fillText('NEW GAME', 66, 156);
+  ctx.font = 'bold 9px monospace';
+  var ngx = G.hasSave ? 58 : 115;
+  frect(ctx, ngx, 184, 90, 14, '#2c1a0c'); frect(ctx, ngx + 1, 185, 88, 12, '#6a3e1e');
+  frect(ctx, ngx + 1, 185, 88, 1, '#8a562e');
+  ctx.fillStyle = PAL.gold2; ctx.fillText('NEW GAME', ngx + 23, 187);
   if (G.hasSave){
-    frect(ctx, 170, 150, 120, 20, '#3a2a52'); frect(ctx, 171, 151, 118, 18, '#6a4a86');
-    ctx.fillText('CONTINUE', 206, 156);
+    frect(ctx, 172, 184, 90, 14, '#2c1a0c'); frect(ctx, 173, 185, 88, 12, '#6a3e1e');
+    frect(ctx, 173, 185, 88, 1, '#8a562e');
+    ctx.fillText('CONTINUE', 195, 187);
   }
   ctx.font = '8px monospace';
-  ctx.fillStyle = '#b4a4cc';
-  if ((tick / 30 | 0) % 2) ctx.fillText(G.hasSave ? '' : '~ click to begin ~', 122, 178);
-  ctx.fillText('for Scarlett, on her 15th birthday ♥', 88, 190);
+  ctx.fillStyle = '#c8d0e4';
+  ctx.fillText('for Scarlett, on her 15th birthday ♥', 74, 148);
 }
 
 function drawEnding(){

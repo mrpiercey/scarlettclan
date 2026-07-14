@@ -59,6 +59,7 @@ var SCENES = {
       {id:'oaks', x:0, y:30, w:80, h:110, name:'great oaks',
         look:'Four enormous oaks, older than any clan. They seem to whisper overhead.'}
     ],
+    edges:{ left:'rivercamp', top:'thundercamp', right:'shadowcamp' },
     exits:[]
   },
 
@@ -92,12 +93,13 @@ var SCENES = {
       {id:'warriorsden', x:24, y:136, w:44, h:24, name:"warriors' den",
         look:'A dome of brambles. Loud snoring comes from inside.'}
     ],
+    edges:{ left:'windcamp', bottom:'fourtrees', right:'shadowcamp' },
     exits:[]
   },
 
   rivercamp: {
     name:'RiverClan Camp', art:'rivercamp', music:'river', horizon:114,
-    spawn:{x:160, y:186},
+    spawn:{x:112, y:186},
     npcs:[
       {id:'leopardstar', x:86, y:152, s:1.2},
       {id:'mosspelt', x:140, y:170, s:1.1, flip:true},
@@ -120,6 +122,7 @@ var SCENES = {
       {id:'nest', x:50, y:176, w:34, h:16, name:"elders' nest",
         look:'Graypool\'s nest has fallen apart. Loose reeds everywhere, and no soft lining at all.'}
     ],
+    edges:{ top:'windcamp', right:'fourtrees' },
     exits:[]
   },
 
@@ -146,6 +149,7 @@ var SCENES = {
       {id:'campdip', x:110, y:140, w:104, h:34, name:'camp hollow',
         look:'WindClan sleeps under the open sky, in a dip sheltered from the wind.'}
     ],
+    edges:{ bottom:'rivercamp', right:'thundercamp', top:'skycamp' },
     exits:[]
   },
 
@@ -170,6 +174,7 @@ var SCENES = {
       {id:'mushrooms', x:22, y:142, w:20, h:16, name:'glowing mushrooms',
         look:'Pale green mushrooms that glow faintly. Pretty... and probably poisonous.'}
     ],
+    edges:{ left:'fourtrees', top:'skycamp' },
     exits:[]
   },
 
@@ -195,6 +200,7 @@ var SCENES = {
       {id:'gorgecaves', x:250, y:88, w:60, h:50, name:'cliff caves',
         look:'Dens dug into the gorge walls, reached by leaps no other clan could make.'}
     ],
+    edges:{ bottom:'shadowcamp', left:'windcamp' },
     exits:[]
   }
 };
