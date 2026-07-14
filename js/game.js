@@ -384,13 +384,7 @@ function makeAction(verb, npc, hot){
 function titleClick(mx, my){
   SND.init();
   SND.retryPending();                          // this click lets the intro music start
-  if (G.hasSave && my > 182 && my < 200 && mx > 172 && mx < 262){
-    load();
-    G.mode = 'play';
-    SND.playSong(SCENES[G.scene].music);
-    return;
-  }
-  var ngx = G.hasSave ? 58 : 115;
+  var ngx = 115;
   if (my > 182 && my < 200 && mx > ngx && mx < ngx + 90){
     startIntro();
     return;
@@ -916,18 +910,13 @@ function drawTitle(){
     var gx = rndi(70, 250), gy = rndi(14, 56);
     px(ctx, gx, gy, '#fff'); px(ctx, gx + 1, gy, '#f6d08a');
   }
-  // wooden buttons (centered when NEW GAME stands alone)
+  // wooden button, centered
   ctx.textBaseline = 'top';
   ctx.font = 'bold 9px monospace';
-  var ngx = G.hasSave ? 58 : 115;
+  var ngx = 115;
   frect(ctx, ngx, 184, 90, 14, '#2c1a0c'); frect(ctx, ngx + 1, 185, 88, 12, '#6a3e1e');
   frect(ctx, ngx + 1, 185, 88, 1, '#8a562e');
   ctx.fillStyle = PAL.gold2; ctx.fillText('NEW GAME', ngx + 23, 187);
-  if (G.hasSave){
-    frect(ctx, 172, 184, 90, 14, '#2c1a0c'); frect(ctx, 173, 185, 88, 12, '#6a3e1e');
-    frect(ctx, 173, 185, 88, 1, '#8a562e');
-    ctx.fillText('CONTINUE', 195, 187);
-  }
   ctx.font = '8px monospace';
   ctx.fillStyle = '#c8d0e4';
   ctx.fillText('for Scarlett, on her fifteenth birthday ♥', 60, 148);
