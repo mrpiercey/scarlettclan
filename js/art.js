@@ -292,9 +292,8 @@ function drawBusSprite(g, x, y, t){
   }
   // lettering + number
   g.fillStyle = '#2a2620'; g.font = 'bold 6px monospace'; g.textBaseline = 'top';
-  g.fillText('FAYETTE CO SCHOOLS', x + 40, y - 26);
-  g.fillStyle = '#2a2620'; g.font = 'bold 9px monospace';
-  g.fillText('15', x + 184, y - 45);
+  g.fillText('FAYETTE CO SCHOOLS', x + 28, y - 26);
+  g.fillText('BUS FIFTEEN', x + 138, y - 26);                 // spelled out, no ambiguous digits
   // roof flashers
   px(g, x + 6, y - 50, '#e43a2a'); px(g, x + 198, y - 50, '#e43a2a');
   // wheels, spinning
