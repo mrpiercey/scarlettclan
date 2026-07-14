@@ -398,7 +398,7 @@ function titleClick(mx, my){
   // any other click just wakes the music and stays on the title
 }
 
-// ---- intro cutscene: Bus 15, home from Henry Clay High School --------------------------
+// ---- intro cutscene: Bus 15, home from summer nature camp at Raven Run ------------------
 function startIntro(){
   localStorage.removeItem(SAVE_KEY);
   G.inventory = []; G.collars = 0; G.flags = {};
@@ -406,8 +406,8 @@ function startIntro(){
   G.introPhase = 0;
   SND.playSong('title');
   DLG.say([
-    N('3:47 PM. The last bell of Scarlett\'s very FIRST day at Henry Clay High School rang twenty minutes ago, and Bus 15 rumbles down Richmond Road — past the Chick-fil-A, past the McDonald\'s, past the Home Depot — on the long ride home.'),
-    ME('First day of high school: survived. And fifteen tomorrow... Taylor Swift wrote a whole song about fifteen, and starting tomorrow it\'s literally MY track. Mom is probably taping up streamers right now.'),
+    N('3:47 PM, the middle of July. The last day of summer nature camp at Raven Run is over, and Bus 15 rumbles down Richmond Road — past the Chick-fil-A, past the McDonald\'s, past the Home Depot — on the long ride home.'),
+    ME('A whole week of nature camp: survived. I can identify seven kinds of hawk and I watched two raccoons argue about a sandwich. And FIFTEEN tomorrow... Taylor Swift wrote a whole song about fifteen, and starting tomorrow it\'s literally MY track. Mom is probably taping up streamers right now.'),
     ME('I just wish this bus ride didn\'t take a hundred years. Should\'ve put on Laufey. Nothing makes a bus window feel like a music video faster than Laufey.'),
     N('The bus is warm. The seat hums. The trees smear past the window like green water...'),
     { who: null, text: 'Her eyes drift closed. Just for a second. Just... for... a... second...',
@@ -530,7 +530,7 @@ function beginWakeUp(){
   startFade('#fff', 60);       // starlight swells white, then the bus fades in
   DLG.say([
     N('...beep. Beep. The hiss of brakes. Warm afternoon sun through a smudged window.'),
-    N('"End of the line, hon!" calls the bus driver. Scarlett blinks awake in her old seat on Bus 15 — same backpack, same afternoon, the end of her very first day at Henry Clay... the day before her birthday.'),
+    N('"End of the line, hon!" calls the bus driver. Scarlett blinks awake in her old seat on Bus 15 — same backpack, same July afternoon, the ride home from the last day of camp... the day before her birthday.'),
     ME('I\'m back! The SAME ride home... but I remember all of it. Every camp. Every collar. Every whisker.'),
     { who:null, text:'She grabs her backpack and hops down the bus steps — and there, on the lawn in front of the dark blue house, her whole family is waiting.',
       effect: function(){ G.endPhase = 1; SND.playSong('birthday'); startFade('#000', 35); } },

@@ -10,7 +10,7 @@ nothing ever has to be carried between camps. Give items by carrying them
 (TAB → click item twice) and clicking them on the cat/thing.
 
 ## Intro
-1. Click through the Bus 15 cutscene — Scarlett dozes off on the ride home from Henry Clay.
+1. Click through the Bus 15 cutscene — Scarlett dozes off riding home from summer camp at Raven Run.
 2. She wakes at Fourtrees: **talk to Lionheart** (press 3, click the golden starry cat).
    He explains the storm scattered the fifteen collars — returning them all to him is the
    only way home. The **map** unlocks (M).

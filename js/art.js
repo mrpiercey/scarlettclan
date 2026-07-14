@@ -292,7 +292,7 @@ function drawBusSprite(g, x, y, t){
   }
   // lettering + number
   g.fillStyle = '#2a2620'; g.font = 'bold 6px monospace'; g.textBaseline = 'top';
-  g.fillText('FAYETTE CO SCHOOLS', x + 28, y - 26);
+  g.fillText('RAVEN RUN DAY CAMP', x + 28, y - 26);
   g.fillText('BUS FIFTEEN', x + 138, y - 26);                 // spelled out, no ambiguous digits
   // roof flashers
   px(g, x + 6, y - 50, '#e43a2a'); px(g, x + 198, y - 50, '#e43a2a');
@@ -335,16 +335,15 @@ ART.painters.bus = function(g){
     frect(g, wx, 82, 62, 12, PAL.grass2);
     dither(g, wx, 66, 62, 28, PAL.grass4, 0.2);
     if (w === 0){
-      // Henry Clay High School, receding behind the bus
-      frect(g, wx + 4, 46, 54, 28, '#b8a488');
-      frect(g, wx + 4, 46, 54, 3, '#8a7a5e');
-      for (var sw = 0; sw < 5; sw++) frect(g, wx + 8 + sw * 10, 52, 6, 8, '#5a708a');
-      frect(g, wx + 26, 64, 10, 10, '#6a5a44');              // doors
-      frect(g, wx + 2, 38, 1, 36, '#888');                   // flagpole
-      frect(g, wx + 3, 38, 8, 5, '#b43a2e');
-      frect(g, wx + 6, 76, 52, 10, '#2a5a34');               // marquee sign
+      // Raven Run nature camp, receding behind the bus
+      tree(g, wx + 10, 76, 30, PAL.leaf1, PAL.leaf2, PAL.leaf3, PAL.trunk2);
+      tree(g, wx + 50, 78, 36, PAL.leaf2, PAL.leaf3, PAL.leaf4, PAL.trunk3);
+      frect(g, wx + 22, 60, 20, 12, '#6a4a2a');              // camp cabin
+      poly(g, [[wx + 20, 60], [wx + 44, 60], [wx + 32, 52]], '#4a3220');
+      frect(g, wx + 6, 74, 52, 10, '#5a4226');               // wooden sign
+      frect(g, wx + 6, 74, 52, 1, '#8a6a42');
       g.fillStyle = '#f0e8c8'; g.font = 'bold 7px monospace'; g.textBaseline = 'top';
-      g.fillText('HENRY CLAY', wx + 9, 77);
+      g.fillText('RAVEN RUN', wx + 12, 75);
     } else if (w === 1){
       // passing houses
       house(g, wx + 6, 78, 20, 16, '#c8b49a', '#8a5a4a', '#a89478');
