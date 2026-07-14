@@ -190,8 +190,8 @@ ART.painters.title = function(g){
   frect(g, 82, 176, 156, 2, '#3e2410');
   px(g, 86, 168, '#c8a24a'); px(g, 233, 168, '#c8a24a');     // nails
   g.font = 'bold 10px monospace'; g.textBaseline = 'top';
-  g.fillStyle = '#2a1408'; g.fillText('THE 15 COLLARS', 119, 164);
-  g.fillStyle = PAL.gold2;  g.fillText('THE 15 COLLARS', 118, 163);
+  g.fillStyle = '#2a1408'; g.fillText('THE FIFTEEN COLLARS', 104, 164);
+  g.fillStyle = PAL.gold2;  g.fillText('THE FIFTEEN COLLARS', 103, 163);
 };
 
 // ---- RICHMOND ROAD (intro: the bus seen from outside, rolling home) ---------
@@ -292,7 +292,7 @@ function drawBusSprite(g, x, y, t){
   }
   // lettering + number
   g.fillStyle = '#2a2620'; g.font = 'bold 6px monospace'; g.textBaseline = 'top';
-  g.fillText('RAVEN RUN DAY CAMP', x + 28, y - 26);
+  g.fillText('LEXINGTON SWIM TEAM', x + 26, y - 26);
   g.fillText('BUS FIFTEEN', x + 138, y - 26);                 // spelled out, no ambiguous digits
   // roof flashers
   px(g, x + 6, y - 50, '#e43a2a'); px(g, x + 198, y - 50, '#e43a2a');
@@ -335,15 +335,17 @@ ART.painters.bus = function(g){
     frect(g, wx, 82, 62, 12, PAL.grass2);
     dither(g, wx, 66, 62, 28, PAL.grass4, 0.2);
     if (w === 0){
-      // Raven Run nature camp, receding behind the bus
-      tree(g, wx + 10, 76, 30, PAL.leaf1, PAL.leaf2, PAL.leaf3, PAL.trunk2);
-      tree(g, wx + 50, 78, 36, PAL.leaf2, PAL.leaf3, PAL.leaf4, PAL.trunk3);
-      frect(g, wx + 22, 60, 20, 12, '#6a4a2a');              // camp cabin
-      poly(g, [[wx + 20, 60], [wx + 44, 60], [wx + 32, 52]], '#4a3220');
-      frect(g, wx + 6, 74, 52, 10, '#5a4226');               // wooden sign
-      frect(g, wx + 6, 74, 52, 1, '#8a6a42');
-      g.fillStyle = '#f0e8c8'; g.font = 'bold 7px monospace'; g.textBaseline = 'top';
-      g.fillText('RAVEN RUN', wx + 12, 75);
+      // the aquatic center, receding behind the bus after the meet
+      frect(g, wx + 4, 50, 56, 22, '#c8d4dc');               // pool building
+      frect(g, wx + 4, 50, 56, 3, '#8aa4b4');
+      frect(g, wx + 10, 56, 12, 10, '#5a708a'); frect(g, wx + 40, 56, 12, 10, '#5a708a');
+      frect(g, wx + 6, 72, 52, 14, '#3a8ac8');               // outdoor pool
+      frect(g, wx + 6, 72, 52, 2, '#8ac8ec');
+      for (var ln = 0; ln < 4; ln++) frect(g, wx + 10 + ln * 12, 74, 1, 12, '#e8e8f0');   // lane lines
+      frect(g, wx + 26, 62, 12, 10, '#e8e8f0');              // starting block
+      frect(g, wx + 6, 88, 52, 8, '#2a5a8a');                // banner
+      g.fillStyle = '#f0f4f8'; g.font = 'bold 6px monospace'; g.textBaseline = 'top';
+      g.fillText('SWIM MEET', wx + 14, 89);
     } else if (w === 1){
       // passing houses
       house(g, wx + 6, 78, 20, 16, '#c8b49a', '#8a5a4a', '#a89478');
