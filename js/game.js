@@ -58,6 +58,17 @@ var tick = 0;
 var fireflies = [];
 var titlePulse = 0;
 
+// ---- screen fades (dream transitions) -----------------------------------------
+var FADE = { t: 0, dur: 1, color: null };
+function startFade(color, dur){ FADE.color = color; FADE.dur = dur; FADE.t = dur; }
+function drawFade(){
+  if (FADE.t <= 0 || !FADE.color) return;
+  ctx.globalAlpha = FADE.t / FADE.dur;
+  ctx.fillStyle = FADE.color;
+  ctx.fillRect(0, 0, 320, 200);
+  ctx.globalAlpha = 1;
+}
+
 // ---- inventory & progress helpers -------------------------------------------
 function hasItem(id){ return G.inventory.indexOf(id) >= 0; }
 function addItem(id){
@@ -395,17 +406,18 @@ function startIntro(){
   G.introPhase = 0;
   SND.playSong('title');
   DLG.say([
-    N('3:47 PM. The last bell at Henry Clay High School rang twenty minutes ago, and Bus 15 rumbles down the long road home.'),
-    ME('Fifteen tomorrow... Taylor Swift wrote a whole song about fifteen, and starting tomorrow it\'s literally MY track. Mom is probably taping up streamers right now.'),
+    N('3:47 PM. The last bell of Scarlett\'s very FIRST day at Henry Clay High School rang twenty minutes ago, and Bus 15 rumbles down the long road home.'),
+    ME('First day of high school: survived. And fifteen tomorrow... Taylor Swift wrote a whole song about fifteen, and starting tomorrow it\'s literally MY track. Mom is probably taping up streamers right now.'),
     ME('I just wish this bus ride didn\'t take a hundred years. Should\'ve put on Laufey. Nothing makes a bus window feel like a music video faster than Laufey.'),
     N('The bus is warm. The seat hums. The trees smear past the window like green water...'),
     { who: null, text: 'Her eyes drift closed. Just for a second. Just... for... a... second...',
-      effect: function(){ G.introPhase = 1; SND.stopSong(); } },
+      effect: function(){ G.introPhase = 1; } },
     { who: null, text: 'Z z z z z z . . .' }
   ], function(){
     G.flags.intro = true;
     travelTo('fourtrees');
     SND.playSong('night');
+    startFade('#000', 50);                     // dream fades up from the dark
     DLG.say([
       N('Scarlett wakes on soft grass, under four oak trees taller than her whole school. The air smells of moss and starlight. This is definitely NOT Bus 15.'),
       ME('Okay. Deep breaths. I fell asleep on the bus, and now there are four giant trees, a rock the size of a garage... and a cat. A golden cat that is GLOWING.'),
@@ -489,6 +501,7 @@ function startFinale(){
   save();
   G.x = 160; G.y = 190; G.dir = 'up'; G.walking = false;
   SND.playSong('birthday');
+  startFade('#000', 40);                       // day melts into the starlit Gathering
   fireflies = [];
   for (var i = 0; i < 15; i++){
     fireflies.push({ x: 40 + i * 16, y: 200 + i * 6, tx: 60 + (i % 5) * 50, ty: 40 + Math.floor(i / 5) * 22, on: false });
@@ -513,13 +526,14 @@ function startFinale(){
 function beginWakeUp(){
   G.mode = 'ending';
   G.endPhase = 0;              // 0 = on the bus | 1 = home with the family | 2 = birthday card
-  SND.stopSong();
+  SND.playSong('birthday');    // the music never stops — endingmusic carries her home
+  startFade('#fff', 60);       // starlight swells white, then the bus fades in
   DLG.say([
     N('...beep. Beep. The hiss of brakes. Warm afternoon sun through a smudged window.'),
-    N('"End of the line, hon!" calls the bus driver. Scarlett blinks awake in her old seat on Bus 15 — same backpack, same afternoon, the last school day before her birthday.'),
+    N('"End of the line, hon!" calls the bus driver. Scarlett blinks awake in her old seat on Bus 15 — same backpack, same afternoon, the end of her very first day at Henry Clay... the day before her birthday.'),
     ME('I\'m back! The SAME ride home... but I remember all of it. Every camp. Every collar. Every whisker.'),
     { who:null, text:'She grabs her backpack and hops down the bus steps — and there, on the lawn in front of the dark blue house, her whole family is waiting.',
-      effect: function(){ G.endPhase = 1; SND.playSong('birthday'); } },
+      effect: function(){ G.endPhase = 1; SND.playSong('birthday'); startFade('#000', 35); } },
     { who:'dad', text:'There she is! Happy 15th birthday, kiddo! Hey — what do you call a pile of kittens? A MEOWNTAIN. I\'ve been saving that one all day. Your mother is very tired.' },
     { who:'mom', text:'Happy birthday, sweetheart! Grilled cheese and tomato soup tonight, cake after — and yes, we spent WAY too much at Wilson\'s Grocery on party snacks. Again.' },
     { who:'hank', text:'Happy birthday, Scarlett! I called dibs on the corner piece — Drake Maye rules, number 10 always gets the corner piece. Also I got you Takis. Okay, I got ME Takis. But I\'ll share.' },
@@ -536,6 +550,7 @@ function update(){
   tick++;
   DLG.update();
   titlePulse += 0.05;
+  if (FADE.t > 0) FADE.t--;
 
   if (G.pendingReveal && !DLG.active){
     G.pendingReveal = false;
@@ -621,9 +636,9 @@ function draw(){
   ctx.textBaseline = 'top';
 
   if (G.mode === 'title'){ drawTitle(); drawPointer(); return; }
-  if (G.mode === 'intro'){ drawIntro(); drawPointer(); return; }
+  if (G.mode === 'intro'){ drawIntro(); drawFade(); drawPointer(); return; }
   if (G.mode === 'map'){ drawMap(); drawPointer(); return; }
-  if (G.mode === 'ending'){ drawEnding(); drawPointer(); return; }
+  if (G.mode === 'ending'){ drawEnding(); drawFade(); drawPointer(); return; }
 
   var sc = SCENES[G.scene];
   var artName = (G.mode === 'ceremony') ? 'ending' : sc.art;
@@ -722,6 +737,7 @@ function draw(){
   if (G.mode === 'inv') drawInv();
 
   DLG.draw(ctx, tick);
+  drawFade();
   drawPointer();
 }
 

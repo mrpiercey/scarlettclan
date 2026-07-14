@@ -246,12 +246,26 @@ ART.painters.bus = function(g){
   // wall panel below windows
   bands(g, 0, 98, VW, 16, ['#a8a494', '#98947f']);
   frect(g, 0, 98, VW, 2, '#c8c4b4');
-  // Scarlett, dozing against the second window (drawn before seat backs)
-  frect(g, 130, 88, 14, 13, HAIR);                            // hair
-  frect(g, 131, 92, 8, 7, SKIN);                              // cheek (leaning right, eyes closed)
-  frect(g, 132, 95, 3, 1, '#6a4226'); frect(g, 136, 95, 2, 1, '#6a4226'); // closed eyes
-  frect(g, 128, 101, 18, 14, SHIRT);                          // shoulder above seat
-  frect(g, 145, 86, 6, 10, HAIR2);                            // hair against glass
+  // interior back wall behind the seats — this band used to be transparent
+  // and collected cursor trails; every pixel gets paint now
+  bands(g, 0, 112, VW, 58, ['#6a665a', '#5e5a4e', '#565246']);
+  dither(g, 0, 112, VW, 58, '#78746a', 0.12);
+  // Scarlett, asleep in the second-row seat, head against the window
+  frect(g, 100, 78, 22, 16, HAIR);                            // hair against the glass
+  frect(g, 98, 82, 6, 14, HAIR2);                             // hair spilling toward window
+  frect(g, 104, 84, 13, 11, SKIN);                            // face, tipped right
+  frect(g, 104, 80, 14, 4, HAIR);                             // bangs
+  frect(g, 106, 89, 4, 1, '#6a4226'); frect(g, 112, 89, 4, 1, '#6a4226'); // closed eyes (lashes)
+  px(g, 107, 90, '#6a4226'); px(g, 113, 90, '#6a4226');
+  frect(g, 109, 93, 4, 1, '#c4685a');                         // soft sleeping smile
+  frect(g, 102, 95, 22, 17, SHIRT);                           // white tee, slumped shoulders
+  frect(g, 102, 95, 22, 2, SHIRT2);
+  frect(g, 100, 98, 4, 12, SHIRT);                            // arm resting on the sill
+  // Scarlett's purple backpack on the bench beside her
+  frect(g, 126, 94, 15, 18, '#7a3a8a');
+  frect(g, 128, 90, 11, 6, '#5a2a66');
+  frect(g, 131, 99, 6, 8, '#9a5aac');
+  px(g, 133, 96, '#c8a24a');                                  // zipper pull
   // seat rows (green vinyl school-bus seats)
   var seats = [12, 96, 180, 264];
   for (var s = 0; s < 4; s++){
@@ -262,10 +276,6 @@ ART.painters.bus = function(g){
     frect(g, sx, 112, 3, 58, '#1e4c2a');
     frect(g, sx + 6, 124, 32, 20, '#245c32');                 // stitched panel
   }
-  // Scarlett's backpack peeking beside her seat
-  frect(g, 152, 120, 16, 20, '#7a3a8a');
-  frect(g, 154, 116, 12, 6, '#5a2a66');
-  frect(g, 157, 124, 6, 9, '#9a5aac');
   // aisle floor
   bands(g, 0, 170, VW, 30, ['#5a564a', '#4c483e', '#3e3a32']);
   dither(g, 0, 170, VW, 30, '#6a6656', 0.15);
@@ -397,7 +407,8 @@ ART.painters.rivercamp = function(g){
 ART.painters.windcamp = function(g){
   daySky(g, 96);
   cloud(g, 120, 50, 40, '#f4f8fc'); cloud(g, 260, 62, 30, '#eaf2f8');
-  // rolling moor hills
+  // rolling moor hills (base fill first so the poly seams can't leave holes)
+  frect(g, 0, 94, VW, 16, PAL.moor3);
   poly(g, [[0,96],[0,84],[90,72],[200,88],[320,74],[320,96]], PAL.moor3);
   poly(g, [[0,110],[0,94],[120,84],[240,98],[320,88],[320,110]], PAL.moor2);
   grassGround(g, 108, PAL.moor1, PAL.moor2, PAL.moor3);
@@ -474,15 +485,38 @@ ART.painters.shadowcamp = function(g){
 };
 
 // ---- SKYCLAN CAMP (the gorge) ----------------------------------------------
-// the sandstone walls are painted by this helper so the background AND the
-// occluder layer (which Scarlett can pass behind) stay identical
+// warm sandstone cliffs, painted INSIDE their polygons (clipped) so no
+// texture ever bleeds into the sky — pure background, Scarlett stays in front
+var SKY_WALL_L = [[0,200],[0,70],[92,70],[112,100],[96,140],[60,170],[30,200]];
+var SKY_WALL_R = [[320,200],[320,64],[230,64],[212,96],[226,138],[262,170],[292,200]];
 function skyGorgeWalls(g){
-  poly(g, [[0,200],[0,70],[92,70],[112,100],[96,140],[60,170],[30,200]], '#c28a52');
-  poly(g, [[0,140],[0,70],[80,70],[96,96],[76,120],[36,134]], '#d8a468');
-  dither(g, 0, 70, 110, 110, '#a87042', 0.25);
-  poly(g, [[320,200],[320,64],[230,64],[212,96],[226,138],[262,170],[292,200]], '#c28a52');
-  poly(g, [[320,130],[320,64],[240,64],[226,92],[248,118],[286,128]], '#d8a468');
-  dither(g, 214, 64, 106, 110, '#a87042', 0.25);
+  var walls = [SKY_WALL_L, SKY_WALL_R];
+  for (var w = 0; w < 2; w++){
+    var pts = walls[w];
+    g.save();
+    g.beginPath();
+    g.moveTo(pts[0][0], pts[0][1]);
+    for (var p = 1; p < pts.length; p++) g.lineTo(pts[p][0], pts[p][1]);
+    g.closePath();
+    g.clip();
+    // sandstone strata, lighter at the sunlit top
+    bands(g, 0, 60, VW, 140, ['#e0b078', '#d8a468', '#cf9a5e', '#c28a52', '#b47c48', '#a87042']);
+    // thin darker strata seams with a gentle wobble
+    g.fillStyle = 'rgba(110,64,32,0.35)';
+    for (var sy = 76; sy < 198; sy += 13){
+      for (var sx2 = 0; sx2 < VW; sx2 += 8){
+        g.fillRect(sx2, sy + ((sx2 / 24) | 0) % 2, 8, 1);
+      }
+    }
+    dither(g, 0, 60, VW, 140, '#e8c088', 0.07);              // faint sun-warmed grain
+    g.restore();
+    // sunlit inner edge of the cliff
+    g.strokeStyle = '#ecc286'; g.lineWidth = 1.5;
+    g.beginPath();
+    g.moveTo(pts[1][0], pts[1][1]);
+    for (var q = 2; q < pts.length; q++) g.lineTo(pts[q][0], pts[q][1]);
+    g.stroke();
+  }
   // cave dens in the walls
   ell(g, 46, 112, 10, 7, '#4a2e1a'); ell(g, 74, 134, 8, 6, '#4a2e1a');
   ell(g, 270, 98, 10, 7, '#4a2e1a'); ell(g, 246, 128, 8, 6, '#4a2e1a');
@@ -521,6 +555,7 @@ ART.painters.skycamp = function(g){
   // half-built den: loose sticks (the Rockpile & finished den are occluders)
   g.strokeStyle = PAL.trunk3;
   g.beginPath(); g.moveTo(200, 174); g.lineTo(216, 162); g.moveTo(206, 176); g.lineTo(220, 168); g.moveTo(198, 170); g.lineTo(212, 158); g.stroke();
+  ell(g, 160, 151, 26, 4, 'rgba(90,52,26,0.3)');             // Rockpile ground shadow
   // the cold spring: clear blue pool bubbling from the rock, moss soaked beside it
   ell(g, 263, 189, 18, 7, '#1a3a5e');
   ell(g, 262, 188, 15, 5.5, PAL.water3); ell(g, 261, 187, 10, 3.5, PAL.water4);
@@ -536,7 +571,7 @@ ART.painters.skycamp = function(g){
   g.beginPath(); g.moveTo(148, 187); g.lineTo(154, 191); g.moveTo(152, 186); g.lineTo(158, 190); g.moveTo(156, 186); g.lineTo(162, 189); g.stroke();  // claw scratches
   px(g, 146, 192, '#c28a52'); px(g, 163, 191, '#c28a52');    // scattered sand
   // sunbeam
-  g.globalAlpha = 0.16;
+  g.globalAlpha = 0.10;
   poly(g, [[150,0],[210,0],[260,200],[120,200]], '#fff6d8');
   g.globalAlpha = 1;
   for (var f = 0; f < 6; f++) flower(g, rndi(80, 240), rndi(160, 195), PAL.gold2);
@@ -628,9 +663,13 @@ var OCC = {
         } }
     ],
     skycamp: [
-      { baseY: 133, paint: function(g){ rock(g, 160, 132, 44, 26, '#b47a48', '#cf9a5e', '#e8bc7e'); } },
-      { baseY: 172, paint: function(g){ blob(g, 110, 168, 18, 8, '#8a9a4e', 5); } },
-      { baseY: 250, paint: function(g){ skyGorgeWalls(g); } }   // walls always in front — no standing ON the cliffs
+      { baseY: 150, paint: function(g){
+          // the Rockpile: stacked warm boulders sitting ON the gorge floor
+          rock(g, 160, 150, 50, 20, '#b47a48', '#cf9a5e', '#e8bc7e');
+          rock(g, 148, 138, 24, 12, '#a87042', '#c28a52', '#e0b078');
+          rock(g, 172, 136, 20, 10, '#b47a48', '#cf9a5e');
+        } },
+      { baseY: 172, paint: function(g){ blob(g, 110, 168, 18, 8, '#8a9a4e', 5); } }
     ]
   }
 };
@@ -644,7 +683,7 @@ var SOLIDS = {
   rivercamp:  [ {x:38,y:126,w:44,h:21}, {x:112,y:118,w:36,h:18} ],
   windcamp:   [ {x:94,y:134,w:32,h:14}, {x:184,y:136,w:36,h:18} ],
   shadowcamp: [ {x:36,y:124,w:48,h:20}, {x:96,y:118,w:40,h:17}, {x:150,y:116,w:40,h:23}, {x:236,y:142,w:84,h:40} ],
-  skycamp:    [ {x:138,y:110,w:44,h:24}, {x:92,y:160,w:36,h:13} ]
+  skycamp:    [ {x:134,y:128,w:52,h:24}, {x:92,y:160,w:36,h:13} ]
 };
 
 // ---- TRAVEL MAP -------------------------------------------------------------

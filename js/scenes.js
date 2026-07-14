@@ -16,13 +16,13 @@ var CATS = {
   sandstorm:    { name:'Sandstorm',    fur:'#e8c88a', belly:'#f4e2b4', stripes:'#d0a860', eye:'#3aa04a', bg:'#4a3a1e' },
   leopardstar:  { name:'Leopardstar',  fur:'#d8a83a', patch:'#a87a1e', eye:'#c8a24a', bg:'#4a4a2a' },
   mosspelt:     { name:'Mosspelt',     fur:'#b4713a', patch:'#4a3a3a', belly:'#e8dcc8', eye:'#4a7ade', bg:'#3a4a3a' },
-  graypool:     { name:'Graypool',     fur:'#9a9aa8', belly:'#c4c4d0', eye:'#c8a24a', bg:'#3a4252' },
+  graypool:     { name:'Graypool',     fur:'#6e6e7c', belly:'#8e8e9c', eye:'#c8a24a', bg:'#3a4252' },
   tallstar:     { name:'Tallstar',     fur:'#2a2a30', patch:'#f0f0f0', belly:'#f0f0f0', eye:'#c8a24a', bg:'#4a5a3a' },
   morningflower:{ name:'Morningflower',fur:'#b4713a', patch:'#5a4a3a', eye:'#c8a24a', bg:'#5a5a2a' },
   barkface:     { name:'Barkface',     fur:'#7a5a38', belly:'#a08258', stripes:'#5c422a', eye:'#c8a24a', bg:'#4a4a2a' },
-  gorsepaw:     { name:'Gorsepaw',     fur:'#a89a7a', belly:'#c8bc9a', eye:'#3aa04a', bg:'#4a4a3a' },
+  gorsepaw:     { name:'Gorsepaw',     fur:'#8a8a94', belly:'#aaaab4', eye:'#3aa04a', bg:'#4a4a3a' },
   blackstar:    { name:'Blackstar',    fur:'#f0f0f0', patch:'#1e1e24', eye:'#c8a24a', bg:'#2a2436' },
-  russetfur:    { name:'Russetfur',    fur:'#a8482a', belly:'#c8684a', eye:'#c8a24a', bg:'#2a2436' },
+  russetfur:    { name:'Russetfur',    fur:'#a8482a', belly:'#c8684a', eye:'#3aa04a', bg:'#2a2436' },
   littlecloud:  { name:'Littlecloud',  fur:'#8a6a42', stripes:'#6a4e2e', belly:'#b49a6e', eye:'#4a7ade', bg:'#2a3626' },
   smokekit:     { name:'Smokekit',     fur:'#5a5a66', belly:'#8a8a96', eye:'#c8a24a', bg:'#2a2436' },
   leafstar:     { name:'Leafstar',     fur:'#b4894e', patch:'#e8dcc0', stripes:'#8a6a36', eye:'#c8a24a', bg:'#8a5c2e' },
@@ -159,7 +159,7 @@ var SCENES = {
     npcs:[
       {id:'blackstar', x:160, y:156, s:1.2},
       {id:'russetfur', x:96, y:170, s:1.1, flip:true},
-      {id:'littlecloud', x:232, y:180, s:1.05},
+      {id:'littlecloud', x:200, y:188, s:1.05},
       {id:'smokekit', x:186, y:184, kit:true, s:0.7}
     ],
     hotspots:[

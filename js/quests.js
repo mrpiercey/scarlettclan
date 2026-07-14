@@ -544,7 +544,7 @@ var QUESTS = {
           CAT('lionheart', 'Time runs differently here, little one — not one heartbeat of your ride will be missed. I am Lionheart, once of ThunderClan, now of StarClan. It was I who called you off that bus, for the clans are in trouble.'),
           CAT('lionheart', 'Long ago, fifteen kittypets left their twoleg homes and became the first great warriors. Their fifteen collars were kept here at Fourtrees — StarClan\'s promise that hearts can change. But a great storm scattered them among the clans\' camps... and tore the path between your world and ours.'),
           CAT('lionheart', 'I need them back, Scarlett. Every one. Only when all fifteen shine at Fourtrees again will the way home open — and place them in my paws, and you will wake on Bus 15 as if you never left it.'),
-          ME('Find fifteen collars, hand them to a glowing cat, wake up on the bus. Sure. I survived finals week at Henry Clay. How hard can this be?'),
+          ME('Find fifteen collars, hand them to a glowing cat, wake up on the bus. Sure. I survived my whole first day of high school TODAY. How hard can this be?'),
           CAT('lionheart', 'That is the spirit. And take heart — why do leopards never escape their troubles? ...Because they are always SPOTTED. Mrrow. StarClan has few entertainments; we take our jokes seriously.'),
           ME('Oh no. You\'re a dad-joke cat. My dad is going to LOVE that you exist.'),
           CAT('lionheart', 'The map of the territories is in your mind now. Four camps hold three collars each — earn them by helping the clans; everything each clan needs can be found in its own camp. When twelve shine, the last secret of the forest will reveal itself.'),
